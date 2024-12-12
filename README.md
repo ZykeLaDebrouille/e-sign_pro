@@ -101,9 +101,6 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
   - Une vidéo explicative ou une documentation succincte sera fournie pour aider les utilisateurs peu familiers avec le numérique.
 - **Options futures :**
   - Intégration éventuelle avec Pronote pour automatiser encore plus le processus.
-- **Flexibilité technique :**
-  - Architecture modulable pour ajouter facilement des fonctionnalités (exemple : remboursement de frais ou gestion des OM).
-
 ---
 
 Nous restons à votre disposition pour toute clarification ou ajustement !
