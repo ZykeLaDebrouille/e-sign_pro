@@ -1,4 +1,4 @@
-# e-sign_pro
+# E-Sign PRO
 **Présentation de notre proposition pour la digitalisation des conventions de stage**
 
 ---
