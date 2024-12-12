@@ -77,11 +77,11 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 
 | **Phase**              | **Date limite** | **Tâches principales**                           |
 |-------------------------|-----------------|--------------------------------------------------|
-| **Analyse initiale**    | 20 décembre     | Comprendre les besoins et valider l’architecture. |
+| **Analyse initiale**    | 15 décembre     | Commence à choisir les outils choisis. |
 | **Développement Backend** | 15 janvier      | APIs : Upload PDF, gestion des signatures.       |
 | **Développement Frontend**| 31 janvier      | Interface : Formulaires, workflow utilisateur.   |
-| **Intégration initiale**  | 15 février      | Mise en place du système complet pour tests.     |
-| **Tests utilisateurs**  | 29 février      | Recueil des retours et correction des bugs.      |
+| **Intégration initiale**  | 15 février      | Mise en place du système complet pour tests. / Dernier rush     |
+| **Tests utilisateurs**  | 28 février      | Recueil des retours et correction des bugs.      |
 
 ---
 
