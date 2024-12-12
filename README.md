@@ -88,8 +88,8 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 ### **5. Modalités d’échange avec le client**
 
 1. **Type d’échange :**
-   - Réunions virtuelles bi-hebdomadaires pour présenter l’avancement.
-   - Utilisation d’une plateforme collaborative comme **Notion** pour partager les informations.
+   - Réunions virtuelles 1/2 semaine pour présenter l’avancement.
+   - Utilisation d’une plateforme collaborative comme **Notion** ou **Trello** pour partager les informations.
 
 2. **Fréquence :**
    - Check-in toutes les deux semaines avec compte rendu des progrès.
