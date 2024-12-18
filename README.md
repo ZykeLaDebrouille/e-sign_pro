@@ -72,8 +72,60 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 - Connexions via **HTTPS**.
 
 ---
+4. Infrastructure Docker
 
-### **4. Timeline envisagée**
+Architecture des services Docker :
+Frontend : Hébergé sur un conteneur Nginx.
+Backend : Exécuté dans un conteneur Node.js.
+Base de données : Exécutée dans un conteneur SQLite ou MongoDB (via une image Docker).
+Proxy Nginx : Centralise les accès entre le frontend et le backend.
+Commandes essentielles :
+Build et lancement :
+"""bash
+docker-compose up --build
+"""
+Arrêt des services :
+"""bash
+docker-compose down
+"""
+Fichier docker-compose.yml simplifié :
+"""yaml
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+
+  db:
+    image: mongo
+    ports:
+      - "27017:27017"
+
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+"""
+
+---
+
+### **5. Timeline envisagée**
 
 | **Phase**              | **Date limite** | **Tâches principales**                           |
 |-------------------------|-----------------|--------------------------------------------------|
@@ -85,7 +137,7 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 
 ---
 
-### **5. Modalités d’échange avec le client**
+### **6. Modalités d’échange avec le client**
 
 1. **Type d’échange :**
    - Réunions virtuelles 1/2 semaine pour présenter l’avancement.
@@ -96,7 +148,7 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 
 ---
 
-### **6. Autres informations**
+### **7. Autres informations**
 - **Formation utilisateurs :**
   - Une vidéo explicative ou une documentation succincte sera fournie pour aider les utilisateurs peu familiers avec le numérique.
 - **Options futures :**
