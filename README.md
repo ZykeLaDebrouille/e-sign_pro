@@ -1,11 +1,13 @@
 # E-Sign PRO
-**Présentation de notre proposition pour la digitalisation des conventions de stage**
+
+## **Présentation de notre proposition pour la digitalisation des conventions de stage**
 
 ---
 
 ### **1. Participants et rôles**
 
 **Équipe projet :**
+
 - **Enes** : Responsable Backend et Intégration des données
   - Rôle : Conception des APIs, gestion des bases de données et intégration des fonctionnalités principales (upload, signatures).
 - **Salomon** : Responsable Frontend et Expérience Utilisateur
@@ -16,9 +18,11 @@
 ### **2. Proposition de solution et fonctionnalités clés**
 
 #### **Objectif :**
+
 Digitaliser et simplifier le processus de signature et d’archivage des conventions de stage pour les élèves, leurs responsables légaux, les entreprises et l’équipe éducative.
 
 #### **Fonctionnalités du MVP (Minimum Viable Product) :**
+
 1. **Upload et gestion des fichiers PDF :**
    - Les conventions de stage peuvent être téléchargées par les élèves ou pré-remplies depuis un modèle.
    - Enregistrement sécurisé sur le serveur.
@@ -37,7 +41,8 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
    - Stockage numérique conformément au RGPD.
 
 #### **Schéma fonctionnel :**
-```
+
+```shema
 [Utilisateur (Frontend)] ⇒ [API Backend] ⇒ [Base de données]
     ⇑               ⇓
 [Génération PDF]    [Notifications]
@@ -48,31 +53,38 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 ### **3. Technologies à utiliser et raisons du choix**
 
 #### **Frontend :**
+
 - **React.js** : Framework moderne et réactif pour une interface intuitive.
   - Raison : Facile à configurer pour une PWA (Progressive Web App) compatible avec mobiles et PC.
 - **Bootstrap** ou **Tailwind CSS** : Pour une interface présentable rapidement.
 
 #### **Backend :**
+
 - **Node.js** avec **Express** : API rapide et modulable.
   - Raison : Légèreté et communauté importante pour un développement efficace.
 
 #### **Base de données :**
+
 - **SQLite** (local) ou **MongoDB** (si NoSQL préféré).
   - Raison : Simplicite et rapidité pour prototyper un MVP.
 
 #### **Génération PDF :**
+
 - **PDFKit** : Librairie Node.js permettant de créer et de modifier des PDF.
 
 #### **Hébergement :**
+
 - **Railway** pour le backend et **Vercel** pour le frontend.
   - Raison : Solutions gratuites pour les petites équipes avec des besoins limités.
 
 #### **Sécurité :**
+
 - Utilisation de **JWT (JSON Web Tokens)** pour authentifier les utilisateurs.
 - Connexions via **HTTPS**.
 
 ---
-4. Infrastructure Docker
+
+### **4. Infrastructure Docker**
 
 Architecture des services Docker :
 Frontend : Hébergé sur un conteneur Nginx.
@@ -81,15 +93,20 @@ Base de données : Exécutée dans un conteneur SQLite ou MongoDB (via une image
 Proxy Nginx : Centralise les accès entre le frontend et le backend.
 Commandes essentielles :
 Build et lancement :
-"""bash
+
+```bash
 docker-compose up --build
-"""
+```
+
 Arrêt des services :
-"""bash
+
+```bash
 docker-compose down
-"""
+```
+
 Fichier docker-compose.yml simplifié :
-"""yaml
+
+```yaml
 version: '3.8'
 
 services:
@@ -121,7 +138,7 @@ services:
     depends_on:
       - frontend
       - backend
-"""
+```
 
 ---
 
@@ -149,11 +166,12 @@ services:
 ---
 
 ### **7. Autres informations**
+
 - **Formation utilisateurs :**
   - Une vidéo explicative ou une documentation succincte sera fournie pour aider les utilisateurs peu familiers avec le numérique.
 - **Options futures :**
   - Intégration éventuelle avec Pronote pour automatiser encore plus le processus.
+
 ---
 
 Nous restons à votre disposition pour toute clarification ou ajustement !
-
