@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:18.16.0-alpine
 
 # Créer le dossier de l'application
 WORKDIR /usr/src/app
@@ -6,8 +6,8 @@ WORKDIR /usr/src/app
 # Copier les fichiers de l'application
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm install
+# Installer les dépendances npm ci au lieu de npm install assure une installation plus cohérente des dépendances.
+RUN npm ci --only=production
 
 # Copier le code source
 COPY . .
