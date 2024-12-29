@@ -7,9 +7,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Installer les dépendances npm ci au lieu de npm install assure une installation plus cohérente des dépendances.
-RUN npm ci --only=production
+RUN npm install --production
 
-# Copier le code source
+# Copier le reste du code source
 COPY . .
 
 # Exposer le port
