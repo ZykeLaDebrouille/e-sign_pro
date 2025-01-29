@@ -18,7 +18,7 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 **Objectifs SMART :**
 1. **Spécifique :** Créer une plateforme web permettant l’upload, la signature électronique séquencée et l’archivage sécurisé des conventions de stage.
 2. **Mesurable :** Livrer un MVP fonctionnel d’ici le 28 février, avec au moins 90 % des fonctionnalités clés opérationnelles.
-3. **Atteignable :** Utiliser des technologies modernes et accessibles (React, Node.js, MongoDB) pour garantir un développement rapide et efficace.
+3. **Atteignable :** Utiliser des technologies modernes et accessibles (React, Node.js, SQLite) pour garantir un développement rapide et efficace.
 4. **Réaliste :** Respecter le calendrier prévu en répartissant les tâches entre les membres de l’équipe.
 5. **Temporel :** Achever le projet en 3 mois, avec des jalons clairs à chaque étape.
 
