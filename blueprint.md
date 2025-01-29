@@ -34,7 +34,7 @@
 ```mermaid
 graph TD
     A[Frontend: React] -->|Requêtes API| B[Backend: Node.js/Express]
-    B -->|Stockage des données| C[(Base de Données: MongoDB)]
+    B -->|Stockage des données| C[(Base de Données: SQLite)]
     B -->|Génération PDF| D[PDFKit]
     B -->|Notifications| E[Service de Notifications]
     E -->|E-mails/SMS| F[Utilisateurs]
@@ -43,7 +43,7 @@ graph TD
 **Explication :**
 - **Frontend** : Interface utilisateur en React.
 - **Backend** : API en Node.js/Express pour gérer les requêtes.
-- **Base de Données** : MongoDB pour stocker les conventions et les informations des utilisateurs.
+- **Base de Données** : SQLite pour stocker les conventions et les informations des utilisateurs.
 - **PDFKit** : Pour générer les PDF signés.
 - **Service de Notifications** : Envoi d'e-mails ou de SMS aux utilisateurs.
 
