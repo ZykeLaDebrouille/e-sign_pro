@@ -1,3 +1,7 @@
+D'accord, je vais retirer toutes les références à **MongoDB** et ajouter une section résumant les **ajouts potentiels** pour le projet **E-Sign PRO**. Voici la version mise à jour :
+
+---
+
 ## **Documentation Technique : E-Sign PRO**
 
 ---
@@ -59,10 +63,10 @@ graph TD
 - **Notification** : Gère l'envoi des notifications.
 
 **Base de Données :**
-- **Collection : Users**
-  - `{ "id": 1, "name": "John Doe", "email": "john@example.com", "role": "élève" }`
-- **Collection : Conventions**
-  - `{ "id": 1, "file": "convention.pdf", "signatures": ["élève", "parent", "entreprise"], "status": "en cours" }`
+- **Table : Users**
+  - `id` (INT, PK), `name` (TEXT), `email` (TEXT), `role` (TEXT).
+- **Table : Conventions**
+  - `id` (INT, PK), `file_path` (TEXT), `signatures` (TEXT), `status` (TEXT).
 
 ---
 
@@ -139,12 +143,34 @@ sequenceDiagram
 **Choix des Technologies :**
 - **React** : Facile à utiliser pour une interface utilisateur réactive.
 - **Node.js/Express** : Léger et adapté pour une API rapide.
-- **MongoDB** : Flexible pour stocker des documents JSON.
+- **SQLite** : Simple et efficace pour un MVP, ne nécessite pas de serveur de base de données séparé.
 - **PDFKit** : Simple à intégrer pour générer des PDF.
 - **JWT** : Sécurise l'authentification des utilisateurs.
 
 ---
 
-### **8. Conclusion**
+### **8. Ajouts Potentiels**
 
-Cette documentation technique fournit un **blueprint complet** pour le développement du MVP d'**E-Sign PRO**. Elle décrit les fonctionnalités, l'architecture, les interactions, et les stratégies de gestion du code et de qualité. En suivant ce plan, l'équipe peut développer le projet de manière structurée et efficace.
+Le projet **E-Sign PRO** est bien avancé, mais les améliorations suivantes sont nécessaires pour garantir sa conformité et son efficacité :
+
+1. **Politique de Confidentialité :**
+   - Ajouter une politique claire expliquant comment les données sont collectées, utilisées et protégées.
+
+2. **Routes API pour les Droits des Utilisateurs :**
+   - Mettre en place des endpoints pour gérer les permissions (ex : accès aux PDF, suppression des données).
+
+3. **Sécurisation des Données :**
+   - Renforcer la sécurité des PDFs et des données stockées (chiffrement des fichiers, validation des accès).
+
+4. **Gestion des Données :**
+   - Clarifier la durée de conservation des données et les procédures de suppression.
+   - Vérifier où les données sont stockées (UE ou hors UE) pour garantir la conformité au RGPD.
+
+5. **Gestion du Consentement :**
+   - Mettre en place un système de consentement explicite pour l'envoi d'e-mails (opt-in).
+
+---
+
+### **9. Conclusion**
+
+Cette documentation technique fournit un **blueprint complet** pour le développement du MVP d'**E-Sign PRO**. Elle décrit les fonctionnalités, l'architecture, les interactions, et les stratégies de gestion du code et de qualité. En suivant ce plan, l'équipe peut développer le projet de manière structurée et efficace, tout en anticipant les améliorations nécessaires pour garantir la conformité et la sécurité.
