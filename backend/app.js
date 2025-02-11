@@ -5,7 +5,7 @@ const cors = require('cors');
 const db = require('./db');
 const usersRoutes = require('./routes/users');
 const documentsRoutes = require('./routes/documents');
-
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(cors());
@@ -30,7 +30,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT}`);
 });
