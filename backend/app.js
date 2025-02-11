@@ -17,7 +17,7 @@ app.use('/api/documents', documentsRoutes);
 
 
 app.get('/', (req, res) => {
-  res.send('DANS LE ROUTE HOME!')
+  res.send('ON EST DANS LE ROUTE HOME!')
   });
 
 app.get('/api/hello', (req, res) => {
