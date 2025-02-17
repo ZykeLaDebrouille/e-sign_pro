@@ -16,12 +16,6 @@ router.get('/generate-editable-convention', async (req, res) => {
       if (err) {
         res.status(500).json({ error: 'Erreur lors de l\'envoi du PDF' });
       }
-      // Supprimez le fichier après l'envoi
-      try {
-        await fs.unlink(pdfPath);
-      } catch (unlinkError) {
-        console.error('Erreur lors de la suppression du fichier:', unlinkError);
-      }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

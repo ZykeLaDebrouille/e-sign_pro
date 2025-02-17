@@ -14,7 +14,9 @@
         "jsonwebtoken": "^9.0.0",
         "nodemailer": "^6.9.3",
         "pdf-lib": "^1.17.1",
-        "sqlite3": "^5.1.6"
+        "sqlite3": "^5.1.7",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
     },
     "devDependencies": {
         "nodemon": "^3.1.9"

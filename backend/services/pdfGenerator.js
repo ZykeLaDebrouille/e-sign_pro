@@ -13,7 +13,7 @@ async function createEditableConvention() {
     // Ajoutez d'autres champs selon les besoins
 
     const savedpdfBytes = await pdfDoc.save();
-    await fs.writeFile('./generated_pdfs/convention_editable.pdf', pdfBytes);
+    await fs.writeFile('./generated_pdfs/convention_editable.pdf', savedpdfBytes);
 
     return './generated_pdfs/convention_editable.pdf';
   } catch (error) {
