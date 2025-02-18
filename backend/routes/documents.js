@@ -1,45 +1,41 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../db');
-const authMiddleware = require('../middleware/auth');
-const { createEditableConvention } = require('../services/pdfGenerator');
-const fs = require('fs').promises;
+const authMiddleware = require("../middleware/auth");
+const Document = require("../models/Document");
+const { createEditableConvention } = require("../services/pdfGenerator");
 
-// Appliquez le middleware d'authentification à toutes les routes de documents
+// Applique l'authentification à toutes les routes
 router.use(authMiddleware);
 
-// Route pour générer la convention de stage éditable
-router.get('/generate-editable-convention', async (req, res) => {
+/**
+ * @swagger
+ * /documents/generate-editable-convention:
+ *   get:
+ *     summary: Générer une convention de stage éditable
+ *     tags: [Documents]
+ */
+router.get("/generate-editable-convention", async (req, res) => {
   try {
     const pdfPath = await createEditableConvention();
-    res.download(pdfPath, 'convention_de_stage.pdf', async (err) => {
-      if (err) {
-        res.status(500).json({ error: 'Erreur lors de l\'envoi du PDF' });
-      }
-    });
+    res.download(pdfPath, "convention_de_stage.pdf");
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Route pour sauvegarder les informations remplies par l'élève
-router.post('/save-convention', async (req, res) => {
-  const { studentInfo, documentId } = req.body;
-  try {
-    await db.run('UPDATE documents SET student_info = ? WHERE id = ?', [JSON.stringify(studentInfo), documentId]);
-    res.json({ message: 'Informations sauvegardées avec succès' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Route pour obtenir les informations d'une convention
-router.get('/:id', async (req, res) => {
+/**
+ * @swagger
+ * /documents/{id}:
+ *   get:
+ *     summary: Récupérer les informations d'un document
+ *     tags: [Documents]
+ */
+router.get("/:id", async (req, res) => {
   const documentId = req.params.id;
   try {
-    const document = await db.get('SELECT * FROM documents WHERE id = ?', [documentId]);
+    const document = await Document.getById(documentId);
     if (!document) {
-      return res.status(404).json({ error: 'Document non trouvé' });
+      return res.status(404).json({ error: "Document non trouvé" });
     }
     res.json(document);
   } catch (error) {
@@ -47,14 +43,36 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Route pour signer une convention
-router.post('/:id/sign', async (req, res) => {
+/**
+ * @swagger
+ * /documents/save-convention:
+ *   post:
+ *     summary: Sauvegarder les informations d'un document
+ *     tags: [Documents]
+ */
+router.post("/save-convention", async (req, res) => {
+  const { studentInfo, documentId } = req.body;
+  try {
+    await Document.updateStudentInfo(documentId, studentInfo);
+    res.json({ message: "Informations sauvegardées avec succès" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /documents/{id}/sign:
+ *   post:
+ *     summary: Signer un document
+ *     tags: [Documents]
+ */
+router.post("/:id/sign", async (req, res) => {
   const { userId, role } = req.body;
   const documentId = req.params.id;
   try {
-    await db.run('INSERT INTO signatures (document_id, user_id, role, signed_at) VALUES (?, ?, ?, ?)', 
-      [documentId, userId, role, new Date().toISOString()]);
-    res.json({ message: 'Document signé avec succès' });
+    await Document.sign(documentId, userId, role);
+    res.json({ message: "Document signé avec succès" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
