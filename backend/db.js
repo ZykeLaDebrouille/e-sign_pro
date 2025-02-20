@@ -1,10 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 
-const db = new sqlite3.Database('./esign.sqlite', (err) => {
+const dbFile = process.env.DB_FILE || "./esign.sqlite"; // Utilise la base mémoire si spécifié
+const db = new sqlite3.Database(dbFile, (err) => {
   if (err) {
-    console.error('Erreur de connexion à la base de données:', err.message);
+    console.error("Erreur de connexion à la base de données:", err.message);
   } else {
-    console.log('Connecté à la base de données SQLite');
+    console.log("✅ Connecté à la base de données SQLite:", dbFile);
   }
 });
 

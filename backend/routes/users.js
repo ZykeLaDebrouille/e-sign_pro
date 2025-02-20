@@ -146,7 +146,7 @@ router.post("/register", async (req, res) => {
  *       200:
  *         description: Connexion réussie, retourne un token JWT
  *       400:
- *         description: Erreur dans la requête (ex: mauvais identifiants)
+ *         description: "Erreur dans la requête (ex: mauvais identifiants)"
  */
 
 // Route pour la connexion
