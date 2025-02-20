@@ -158,7 +158,7 @@ services:
 
 1. **Type d’échange :**
    - Réunions virtuelles 1/2 semaine pour présenter l’avancement.
-   - Utilisation d’une plateforme collaborative comme **Notion** ou **Trello** pour partager les informations.
+   - Utilisation d’une plateforme collaborative comme **Trello** pour partager les informations.
 
 2. **Fréquence :**
    - Check-in toutes les deux semaines avec compte rendu des progrès.
