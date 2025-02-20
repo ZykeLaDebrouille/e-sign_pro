@@ -2,23 +2,41 @@ require('dotenv').config(); // Assurez-vous d'installer dotenv : npm install dot
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require("cookie-parser");
 const db = require('./db');
 const usersRoutes = require('./routes/users');
 const documentsRoutes = require('./routes/documents');
+const setupSwagger = require("./swagger");
+const errorHandler = require("./middleware/errorHandler");
+const compression = require("compression");
+const morgan = require("morgan");
+const winston = require("winston");
+
+const logger = winston.createLogger({
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: "logs/server.log" }),
+  ],
+});
 
 
+const PORT = process.env.PORT || 5000;
 const app = express();
-app.use(cors());
+
+
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));  // Pour autoriser les requêtes depuis le frontend
 app.use(express.json());
+app.use(cookieParser());
+app.use(errorHandler);
+app.use(compression());
+app.use(morgan("combined"));
+
+setupSwagger(app);
 
 // Routes
 app.use('/api/users', usersRoutes);
 app.use('/api/documents', documentsRoutes);
 
-
-app.get('/', (req, res) => {
-  res.send('DANS LE ROUTE HOME!')
-  });
 
 app.get('/api/hello', (req, res) => {
   res.send('Hello from /API/HELLO Backend!');
@@ -30,7 +48,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT}`);
 });
