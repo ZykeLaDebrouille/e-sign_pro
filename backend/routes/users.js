@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const db = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
+const { registrationRules } = require("../validators/userValidator");
 
 const JWT_SECRET = process.env.JWT_SECRET || "votre_secret_jwt";
 
@@ -76,9 +78,14 @@ const isValidEmail = (email) => {
  */
 
 // Route pour enregistrer un nouvel utilisateur
-router.post("/register", async (req, res) => {
-  let { email, password, role } = req.body;
-  console.log("Données reçues :", { email, password, role });
+router.post('/register', registrationRules, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ 
+      code: 'VALIDATION_ERROR',
+      errors: errors.array().map(e => ({ field: e.param, message: e.msg }))
+    });
+  }
 
   // Vérification des champs obligatoires
   if (!email || !password) {

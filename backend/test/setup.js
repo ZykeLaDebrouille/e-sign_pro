@@ -1,16 +1,12 @@
-const request = require("supertest");
-const app = require("../app");
-
-let server;
-process.env.DB_FILE = ":memory:"; // Utilise une base SQLite en mémoire pour les tests
+require("dotenv").config();
+const db = require("../config/db");
 
 beforeAll(() => {
-  server = app.listen(4000, () => console.log("🧪 Test server running on port 4000"));
+  console.log("⚡ Initialisation des tests...");
 });
 
-afterAll((done) => {
-  server.close(() => {
-    console.log("🛑 Test server stopped");
-    done();
-  });
+afterAll(() => {
+  db.close();
+  console.log("✅ Fin des tests !");
+  done();
 });

@@ -1,4 +1,4 @@
-const db = require("../db");
+const db = require("../config/db");
 
 /**
  * Exécuter une requête SQLite en mode Promise
