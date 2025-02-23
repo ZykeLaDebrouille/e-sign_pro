@@ -126,7 +126,7 @@ router.post("/register", async (req, res) => {
 /**
  * @swagger
  * /users/login:
- *   post:
+ *   get:
  *     summary: Connexion d'un utilisateur
  *     tags: [Utilisateurs]
  *     requestBody:
