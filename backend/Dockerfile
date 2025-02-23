@@ -13,7 +13,7 @@ RUN npm install --production
 COPY . .
 
 # Exposer le port
-EXPOSE 5000
+EXPOSE 5050
 
 # Démarrer le serveur
 CMD ["node", "app.js"]
