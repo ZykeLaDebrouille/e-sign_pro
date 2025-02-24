@@ -77,6 +77,48 @@ const Document = {
       [documentId, userId, role, new Date().toISOString()]
     );
   },
+  /**
+   * Récupérer l'historique des signatures d'un document
+   * @param {number} documentId - ID du document
+   * @returns {Promise<Array>} Liste des signatures
+   */
+    async getSignatureHistory(documentId) {
+      return getQuery(
+      `SELECT signatures.*, users.firstname, users.lastname 
+        FROM signatures 
+        JOIN users ON signatures.user_id = users.id 
+        WHERE document_id = ? 
+        ORDER BY signed_at DESC`,
+      [documentId]
+    );
+  },
+
+  /**
+   * Vérifier si un document est complètement signé
+   * @param {number} documentId - ID du document
+   * @returns {Promise<boolean>}
+   */
+  async isFullySigned(documentId) {
+    const signatures = await getQuery(
+      "SELECT COUNT(*) as count FROM signatures WHERE document_id = ?",
+      [documentId]
+    );
+    return signatures.count >= 3; // Exemple: 3 signatures requises
+  },
+
+  /**
+   * Mettre à jour le statut d'un document
+   * @param {number} documentId - ID du document
+   * @param {string} status - Nouveau statut
+   * @returns {Promise<void>}
+   */
+  async updateStatus(documentId, status) {
+    await runQuery(
+      "UPDATE documents SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [status, documentId]
+    );
+  }
+
 };
 
 module.exports = Document;

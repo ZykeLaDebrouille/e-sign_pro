@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/User');
+const router = express.Router();
 
 const auth = async (req, res, next) => {
   try {
@@ -34,5 +35,20 @@ const auth = async (req, res, next) => {
     }
   }
 };
+const checkRole = (roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Accès non autorisé' });
+    }
+    next();
+  };
+};
+
+// Utilisation dans les routes
+router.post('/conventions/create', 
+  authenticateToken, 
+  checkRole(['ADMIN', 'TEACHER']), 
+  conventionController.create
+);
 
 module.exports = auth;

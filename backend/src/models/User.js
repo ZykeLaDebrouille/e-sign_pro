@@ -191,7 +191,57 @@ class User {
       throw new ApiError(500, 'Erreur lors du changement de mot de passe');
     }
   }
+/**
+   * Récupérer tous les documents associés à l'utilisateur
+   * @returns {Promise<Array>}
+   */
+async getDocuments() {
+  try {
+    const documents = await database.all(
+      `SELECT documents.* 
+       FROM documents 
+       JOIN user_documents ON documents.id = user_documents.document_id 
+       WHERE user_documents.user_id = ?`,
+      [this.id]
+    );
+    return documents;
+  } catch (error) {
+    throw new ApiError(500, 'Erreur lors de la récupération des documents');
+  }
+}
 
+/**
+ * Vérifier si l'utilisateur a le droit de signer un document
+ * @param {number} documentId - ID du document
+ * @returns {Promise<boolean>}
+ */
+async canSignDocument(documentId) {
+  try {
+    const document = await database.get(
+      `SELECT * FROM user_documents 
+        WHERE user_id = ? AND document_id = ? AND can_sign = 1`,
+      [this.id, documentId]
+    );
+    return !!document;
+  } catch (error) {
+    throw new ApiError(500, 'Erreur lors de la vérification des droits');
+  }
+}
+
+/**
+ * Désactiver temporairement un compte utilisateur
+ * @returns {Promise<void>}
+ */
+async deactivateAccount() {
+  try {
+    await database.run(
+      'UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [this.id]
+    );
+  } catch (error) {
+    throw new ApiError(500, 'Erreur lors de la désactivation du compte');
+  }
+}
   // Méthode pour obtenir un objet utilisateur sans données sensibles
   toJSON() {
     return {
