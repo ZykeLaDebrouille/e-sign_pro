@@ -1,49 +1,26 @@
-// src/controllers/conventionController.js
-const ConventionService = require('../services/conventionService');
+// /src/controllers/conventionController.js
+const pdfGenerator = require('../services/pdfGenerator');
+const conventionFields = require('../config/conventionFields');
 
 class ConventionController {
-    async createConvention(req, res) {
-        try {
-            const { eleve_id, entreprise_id } = req.body;
-            const convention = await ConventionService.createNewConvention(eleve_id, entreprise_id);
-            res.json(convention);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
+  async generateConvention(req, res, next) {
+    try {
+      const conventionData = req.body;
+      
+      // Valider les données reçues contre le schéma
+      // TODO: Ajouter la validation
 
-    async updateConvention(req, res) {
-        try {
-            const { id } = req.params;
-            const updates = req.body;
-            const convention = await ConventionService.updateConvention(id, updates);
-            res.json(convention);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
+      // Générer le PDF
+      const pdfBytes = await pdfGenerator.generateConvention(conventionData);
 
-    async getConvention(req, res) {
-        try {
-            const { id } = req.params;
-            const convention = await ConventionService.getConvention(id);
-            res.json(convention);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
+      // Envoyer le PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=convention.pdf');
+      res.send(Buffer.from(pdfBytes));
+    } catch (error) {
+      next(error);
     }
-
-    async generatePDF(req, res) {
-        try {
-            const { id } = req.params;
-            const pdfBuffer = await ConventionService.generatePDF(id);
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=convention_${id}.pdf`);
-            res.send(pdfBuffer);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
+  }
 }
 
 module.exports = new ConventionController();

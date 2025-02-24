@@ -1,12 +1,12 @@
-// src/routes/conventionRoutes.js
+// /src/routes/conventionsRoutes.js
 const express = require('express');
 const router = express.Router();
 const conventionController = require('../controllers/conventionController');
-const auth = require('../middleware/auth');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/create', auth, conventionController.createConvention);
-router.put('/:id', auth, conventionController.updateConvention);
-router.get('/:id', auth, conventionController.getConvention);
-router.get('/:id/pdf', auth, conventionController.generatePDF);
+router.post('/generate', 
+  authMiddleware.authenticate, 
+  conventionController.generateConvention
+);
 
 module.exports = router;
