@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middleware/auth");
+const auth = require("../middleware/auth");
 const Document = require("../models/Document");
 const { createEditableConvention } = require("../services/pdfGenerator");
 
 // Applique l'authentification à toutes les routes
-router.use(authMiddleware);
+router.use(auth);
 
 /**
  * @swagger

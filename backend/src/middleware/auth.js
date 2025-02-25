@@ -1,13 +1,13 @@
+// src/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/User');
-const router = express.Router();
 
 const auth = async (req, res, next) => {
   try {
     // Vérifier le token dans les cookies ou dans le header Authorization
     const token = req.cookies.accessToken || 
-                 (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+                  (req.headers.authorization && req.headers.authorization.split(' ')[1]);
 
     if (!token) {
       throw new ApiError(401, 'Authentification requise');
@@ -35,6 +35,7 @@ const auth = async (req, res, next) => {
     }
   }
 };
+
 const checkRole = (roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -44,11 +45,4 @@ const checkRole = (roles) => {
   };
 };
 
-// Utilisation dans les routes
-router.post('/conventions/create', 
-  authenticateToken, 
-  checkRole(['ADMIN', 'TEACHER']), 
-  conventionController.create
-);
-
-module.exports = auth;
+module.exports = { auth, checkRole };

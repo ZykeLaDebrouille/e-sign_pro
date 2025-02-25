@@ -9,7 +9,7 @@ class Database {
   connect() {
     return new Promise((resolve, reject) => {
       try {
-        const dbPath = path.resolve(__dirname, '../../data/esign.sqlite');
+        const dbPath = path.resolve(__dirname, '../../database/esign.sqlite');
         
         this.db = new sqlite3.Database(dbPath, (err) => {
           if (err) {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userRoutes = require('./src/routes/userRoutes');
+const userRoutes = require('./userRoutes');
 
 // Route de base pour vérifier que l'API fonctionne
 router.get('/', (req, res) => {
