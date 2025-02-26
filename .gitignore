@@ -1,0 +1,5 @@
+package-lock.json
+backend/node_modules/
+node_modules/
+.env
+backend/generated_pdfs/
