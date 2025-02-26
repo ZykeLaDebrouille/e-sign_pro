@@ -1,0 +1,32 @@
+{
+	"documents": [
+	  {
+		"id": "12345",
+		"fileName": "example.pdf",
+		"status": "Uploaded"
+	  }
+	],
+	"signatures": [
+	  {
+		"documentId": "12345",
+		"role": "Étudiant",
+		"status": "Terminé"
+	  },
+	  {
+		"documentId": "12345",
+		"role": "Parent",
+		"status": "En attente"
+	  },
+	  {
+		"documentId": "12345",
+		"role": "Entreprise",
+		"status": "En attente"
+	  },
+	  {
+		"documentId": "12345",
+		"role": "Équipe pédagogique",
+		"status": "En attente"
+	  }
+	]
+  }
+  
