@@ -5,11 +5,11 @@ services:
     build:
       context: ./backend
     ports:
-      - "5000:5000"
+      - "5050:5050"
 
   frontend:
     build:
-      context: ./frontend
+      context: ./front-end
     ports:
       - "3000:3000"
 
