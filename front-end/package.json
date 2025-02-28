@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Application de gestion de signature électronique",
   "main": "src/index.js",
+  "proxy": "http://localhost:5000",
   "scripts": {
     "start": "react-scripts start",
     "server": "json-server --watch db.json --port 5000",

@@ -20,10 +20,11 @@ function RegisterForm({ onSwitchToLogin }) {
 
     try {
       // Remplacez l’URL par celle de votre backend
-      const response = await axios.post("http://localhost:3001/api/auth/register", {
+      const response = await axios.post('http://localhost:5050/api/auth/register', {
         email,
         password,
       });
+      
 
       console.log("Réponse du serveur:", response.data);
       setSuccessMessage("Votre compte a été créé avec succès !");
