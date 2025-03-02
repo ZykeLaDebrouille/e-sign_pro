@@ -6,8 +6,8 @@ const conventionController = require('../controllers/conventionController');
 
 router.post('/conventions/create', 
   auth, 
-  checkRole(['ADMIN', 'TEACHER']), 
-  conventionController.create
+  checkRole(['ADMIN', 'PROFESSEUR']), 
+  conventionController.generateConvention
 );
 
 module.exports = router;
