@@ -9,7 +9,7 @@ services:
 
   frontend:
     build:
-      context: ./front-end
+      context: ./frontend
     ports:
       - "3000:3000"
 
