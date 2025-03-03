@@ -6,6 +6,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const routes = require('./routes');
+const listEndpoints = require('express-list-endpoints');
 const errorHandler = require('./middleware/errorHandler');
 const database = require('./config/database');
 
@@ -46,5 +47,8 @@ process.on('unhandledRejection', (err) => {
   console.error('Erreur non gérée:', err);
   process.exit(1);
 });
+
+// Affiche toutes les routes dans la console
+console.log('Endpoints de l\'app :', listEndpoints(app));
 
 module.exports = app;

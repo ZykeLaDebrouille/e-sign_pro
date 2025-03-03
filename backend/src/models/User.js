@@ -15,7 +15,7 @@ class User {
   }
 
   // Méthodes statiques pour la gestion des utilisateurs
-  static async create({ email, password, firstname, lastname, role = 'user' }) {
+  static async create({ email, password, firstname, lastname, role }) {
     try {
       // Vérifier si l'email existe déjà
       const existingUser = await database.get(
