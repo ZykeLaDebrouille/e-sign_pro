@@ -1,16 +1,18 @@
-import React from 'react';
+// src/components/ProtectedRoute.jsx
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-const ProtectedRoute = ({ isAuthenticated, children }) => {
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
   if (!isAuthenticated) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <p>Pour accéder à ESignPro, vous devez être connecté ou créer un compte.</p>
-        <button onClick={() => navigate('/login')}>
-          Se connecter / S'inscrire
-        </button>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Accès restreint</h2>
+        <p>Vous devez être connecté pour accéder à cette page.</p>
+        <button onClick={() => navigate('/login')}>Se connecter / S'inscrire</button>
       </div>
     );
   }
