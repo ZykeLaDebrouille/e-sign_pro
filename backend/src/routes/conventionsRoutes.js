@@ -7,8 +7,13 @@ const conventionController = require('../controllers/conventionController');
 router.post(
   '/',
   auth,
-  checkRole(['ADMIN', 'PROFESSEUR', 'eleve']),
-  conventionController.createConvention
+  checkRole(['ADMIN', 'PROFESSEUR', 'ELEVE']),
+  conventionController.generateConventionPDF
+);
+
+// Route pour tester l'endpoint
+router.get('/test',(req, res,) =>
+  res.send('test')
 );
 
 // Route pour récupérer une convention par son ID

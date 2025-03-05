@@ -4,17 +4,16 @@ const pdfGenerator = require('../services/pdfGenerator');
 
 class ConventionController {
   /**
-   * Crée une nouvelle convention.
+   * Génère le PDF de la convention.
    */
-  async createConvention(req, res, next) {
+  async generateConventionPDF(req, res, next) {
     try {
       const data = req.body;
-      // TODO: Ajouter une validation stricte des données
-      const convention = await Convention.create(data);
-      return res.status(201).json({
-        status: "success",
-        data: convention.toJSON()
-      });
+      // On suppose que pdfGenerator.generateConvention accepte un objet JSON
+      const pdfBytes = await pdfGenerator.generateConvention(data);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename=convention.pdf`);
+      return res.send(Buffer.from(pdfBytes));
     } catch (error) {
       next(error);
     }
@@ -69,26 +68,6 @@ class ConventionController {
       }
       await convention.softDelete();
       return res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  /**
-   * Génère et renvoie le PDF de la convention.
-   */
-  async generateConventionPDF(req, res, next) {
-    try {
-      const { id } = req.params;
-      const convention = await Convention.findById(id);
-      if (!convention) {
-        throw new ApiError(404, "Convention non trouvée");
-      }
-      // On suppose que pdfGenerator.generateConvention accepte un objet JSON
-      const pdfBytes = await pdfGenerator.generateConvention(convention.toJSON());
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename=convention_${id}.pdf`);
-      return res.send(Buffer.from(pdfBytes));
     } catch (error) {
       next(error);
     }
