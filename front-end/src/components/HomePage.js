@@ -5,7 +5,7 @@ const HomePage = () => {
     <div>
       <div className="hero">
         <div className="hero-content">
-          <h1>Bienvenue sur MonSite</h1>
+          <h1>Bienvenue sur ESignPro</h1>
         </div>
       </div>
       <div className="container">
