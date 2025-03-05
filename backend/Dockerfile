@@ -15,5 +15,6 @@ COPY . .
 # Exposer le port
 EXPOSE 5050
 
+
 # Démarrer le serveur
-CMD ["node", "app.js"]
+CMD ["node", "src/server.js"]
