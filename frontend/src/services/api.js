@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Si vous n'êtes pas dans Docker, utilisez localhost.
 // Si votre application s'exécute dans un conteneur, utilisez http://host.docker.internal:5000
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5050';
 
 export const uploadDocument = async (file) => {
   if (!file) {

@@ -12,37 +12,41 @@ const database = require('./config/database');
 
 const app = express();
 
-// Middleware de sécurité
+// Middleware de sécurité avec Helmet pour sécuriser les headers HTTP
 app.use(helmet());
 
-// Configuration CORS
+// Configuration de CORS pour autoriser le front-end à accéder aux ressources
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: FRONTEND_URL,
+  credentials: true, // Permet l'envoi de cookies, headers d'authentification, etc.
 }));
 
-// Parsing du body et des cookies
+// Middleware pour parser les corps de requêtes et les cookies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Logging
+// Logging en mode développement
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Connection à la base de données
+// Connexion à la base de données
 database.connect()
   .then(() => console.log('Base de données connectée'))
-  .catch(err => console.error('Erreur de connexion à la base de données:', err));
+  .catch(err => {
+    console.error('Erreur de connexion à la base de données:', err);
+    process.exit(1);
+  });
 
-// Routes
+// Montage des routes sous le préfixe /api
 app.use('/api', routes);
 
-// Gestion des erreurs
+// Middleware de gestion des erreurs (centralise le traitement des erreurs)
 app.use(errorHandler);
 
-// Gestion des erreurs non attrapées
+// Gestion des promesses non attrapées
 process.on('unhandledRejection', (err) => {
   console.error('Erreur non gérée:', err);
   process.exit(1);
