@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Application de gestion de signature électronique",
   "main": "src/index.js",
-  "proxy": "http://localhost:5050",
   "scripts": {
     "start": "react-scripts start",
     "server": "json-server --watch db.json --routes routes.json --port 5050",
@@ -21,7 +20,7 @@
     "react-pdf": "^9.2.1",
     "react-router-dom": "^7.1.1",
     "react-scripts": "^5.0.1",
-    "react-signature-canvas": "^1.0.6",
+    "react-signature-canvas": "^1.0.7",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
