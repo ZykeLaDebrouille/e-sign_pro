@@ -1,3 +1,70 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/index.css */
+html, body {
+	margin: 0;
+	padding: 0;
+	font-family: 'Helvetica Neue', Arial, sans-serif;
+	background: transparent;
+	height: 100%;
+  }
+  
+  /* La classe app-container est utilisée dans AppRoutes pour le fond d'écran */
+  .app-container {
+	position: relative;
+  }
+  
+  /* Ajout d'un overlay sombre pour améliorer le contraste du texte */
+  .app-container::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.3);
+	z-index: 0;
+  }
+  
+  /* Tout le contenu de l'application doit être au-dessus de l'overlay */
+  .app-container > * {
+	position: relative;
+	z-index: 1;
+  }
+  
+  /* Navbar : style sobre et épuré */
+  nav {
+	background-color: rgba(255, 255, 255, 0.9);
+	padding: 1rem;
+  }
+  
+  nav ul {
+	list-style: none;
+	display: flex;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+  }
+  
+  nav ul li a {
+	text-decoration: none;
+	color: #333;
+	font-weight: bold;
+  }
+  
+  /* Style général pour les pages */
+  .home-page,
+  .contact-page,
+  .about-page,
+  .esignpro-page {
+	padding: 2rem;
+	margin: 2rem auto;
+	max-width: 800px;
+	background-color: rgba(255, 255, 255, 0.85);
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  
+  /* Un exemple de style pour les titres */
+  h1, h2 {
+	color: #333;
+  }
+  

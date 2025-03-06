@@ -1,21 +1,29 @@
+// src/components/HomePage.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const HomePage = () => {
   return (
-    <div>
-      <div className="hero">
-        <div className="hero-content">
-          <h1>Bienvenue sur ESignPro</h1>
-        </div>
-      </div>
-      <div className="container">
-        <div className="page-section">
-          <h2>Découvrez nos services</h2>
-          <p>
-            Notre solution innovante vous permet de gérer vos documents en ligne et de signer électroniquement en toute simplicité.
-          </p>
-        </div>
-      </div>
+    <div className="home-page">
+      <h1>Bienvenue sur E-Sign Pro</h1>
+      <p>
+        Découvrez notre solution de signature électronique moderne et sécurisée. 
+        Simplifiez la gestion de vos documents et signez en toute sérénité.
+      </p>
+      <Link
+        to="/esignpro"
+        style={{
+          display: 'inline-block',
+          marginTop: '1rem',
+          padding: '0.5rem 1rem',
+          backgroundColor: '#3b82f6',
+          color: '#fff',
+          borderRadius: '4px',
+          textDecoration: 'none'
+        }}
+      >
+        Accéder à ESignPro
+      </Link>
     </div>
   );
 };
