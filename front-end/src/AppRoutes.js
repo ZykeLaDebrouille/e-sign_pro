@@ -1,56 +1,47 @@
 // src/AppRoutes.jsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
+import ESignProPage from './components/ESignProPage';
 import ContactPage from './components/ContactPage';
 import AboutPage from './components/AboutPage';
-import ESignProPage from './components/ESignProPage';
-import Footer from './components/Footer';
-import './index.css';
+
+// Import des nouvelles pages Auth
+import LoginPage from './components/Auth/LoginPage';
+import RegisterPage from './components/Auth/RegisterPage';
+
+// Import du composant de protection
+import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes = () => {
-  const backgroundImages = [
-    '/images/bg1.jpg',
-    '/images/bg2.jpg',
-    '/images/bg3.jpg',
-    '/images/bg4.jpg'
-  ];
-
-  const [bgImage, setBgImage] = useState('');
-
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-    setBgImage(backgroundImages[randomIndex]);
-  }, []);
-
   return (
-    <div
-      className="app-container"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Router>
-        <Navbar />
-        {/* Conteneur principal pour les routes */}
-        <div style={{ flex: 1 }}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/esignpro" element={<ESignProPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
-        <Footer />
-      </Router>
-    </div>
+    <Router>
+      <Navbar />
+      <Routes>
+        {/* Pages publiques */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/about" element={<AboutPage />} />
+
+        {/* Pages d'authentification */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Page ESignPro protégée */}
+        <Route
+          path="/esignpro"
+          element={
+            <ProtectedRoute>
+              <ESignProPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirection si aucune route ne correspond */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 };
 
