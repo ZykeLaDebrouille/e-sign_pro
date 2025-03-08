@@ -1,0 +1,10 @@
+const ROLES = {
+    ADMIN: 'ADMIN',
+    PROFESSEUR: 'PROFESSEUR',
+    DDFPT: 'DDFPT',
+    PROF_PRINCIPAL: 'PROFESSEUR_PRINCIPAL',
+    ELEVE: 'ELEVE',
+    TUTEUR: 'TUTEUR'
+};
+
+module.exports = ROLES;
