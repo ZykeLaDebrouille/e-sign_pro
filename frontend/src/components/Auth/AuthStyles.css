@@ -38,9 +38,32 @@
 	border-radius: 4px;
   }
   
+  .password-wrapper {
+	display: flex;
+	align-items: center;
+  }
+  
+  .password-wrapper input {
+	flex: 1;
+  }
+  
+  .toggle-password {
+	margin-left: 0.5rem;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	color: #007aff;
+	font-weight: 600;
+  }
+  
   .checkbox-group {
 	display: flex;
 	align-items: center;
+  }
+  
+  .error {
+	color: red;
+	font-size: 0.9rem;
   }
   
   .btn-primary {
