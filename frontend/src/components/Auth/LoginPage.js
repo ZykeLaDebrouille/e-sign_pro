@@ -10,17 +10,16 @@ const LoginPage = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Exemple simplifié
+    // Exemple simplifié : remplacez par un appel API pour authentifier l'utilisateur
     if (email === 'test@exemple.com' && password === '1234') {
-      // Suppose qu’on récupère le rôle (ex. 'ELEVE') d’une API
-      login('ELEVE');
-      navigate('/esignpro'); // Redirection vers la page ESignPro
+      login('ELEVE'); // Par exemple, on définit le rôle ici
+      navigate('/esignpro');
     } else {
-      alert('Identifiants incorrects ou simulation d’erreur');
+      setErrorMessage('Identifiants incorrects.');
     }
   };
 
@@ -30,27 +29,27 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} className="auth-form">
         <div className="form-group">
           <label>Adresse e-mail</label>
-          <input 
+          <input
             type="email"
             placeholder="Votre e-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required 
+            required
           />
         </div>
         <div className="form-group">
           <label>Mot de passe</label>
-          <input 
+          <input
             type="password"
             placeholder="Votre mot de passe"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required 
+            required
           />
         </div>
+        {errorMessage && <p className="error">{errorMessage}</p>}
         <button type="submit" className="btn-primary">Se connecter</button>
       </form>
-
       <p className="switch-link">
         ou bien, <Link to="/register">créer un compte</Link>
       </p>

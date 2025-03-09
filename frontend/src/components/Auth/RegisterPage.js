@@ -31,7 +31,6 @@ const RegisterPage = () => {
     return regex.test(email);
   };
 
-  // Mise à jour en temps réel de l'email avec validation
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
@@ -59,7 +58,7 @@ const RegisterPage = () => {
     }
 
     try {
-      // Appel API simulé pour créer l'utilisateur (remplacez par votre appel réel)
+      // Appel API simulé pour créer l'utilisateur (à remplacer par votre appel réel)
       await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -137,7 +136,7 @@ const RegisterPage = () => {
               {showPassword ? "Cacher" : "Afficher"}
             </button>
           </div>
-          <small>Votre mot de passe doit respecter les conditions suivantes</small>
+          <small>Votre mot de passe doit respecter les conditions suivantes :</small>
           <ul className="password-criteria">
             <li className={conditionLength ? "valid" : ""}>
               {conditionLength ? "✓" : "✗"} Au moins 8 caractères

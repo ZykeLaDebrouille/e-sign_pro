@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext'; // Chemin correct ?
+import { AuthContext } from '../context/AuthContext';
 
 const Navbar = () => {
   const { isAuthenticated, logout } = useContext(AuthContext);
@@ -13,6 +13,7 @@ const Navbar = () => {
         <li><Link to="/contact">Contact</Link></li>
         <li><Link to="/about">À propos</Link></li>
         <li><Link to="/esignpro">ESignPro</Link></li>
+        {isAuthenticated && <li><Link to="/profile">Profil</Link></li>}
       </ul>
       <ul style={styles.navRight}>
         {isAuthenticated ? (
