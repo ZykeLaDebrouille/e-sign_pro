@@ -1,237 +1,257 @@
-// src/components/EnhancedESignProPage.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import SignatureCanvas from 'react-signature-canvas';
-import axios from 'axios';
+// frontend/src/components/ESignProPage.js
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { conventionApi } from '../services/api/conventionApi';
+import { documentApi } from '../services/api/documentApi';
+import { useAuth } from '../context/AuthContext';
+import Loader from './Loader';
 
-const EnhancedESignProPage = () => {
-  // État de la progression du workflow (0: Upload, 1: Authentification, 2: Signature, 3: Finalisation, 4: Terminé)
-  const [currentStep, setCurrentStep] = useState(0);
+const ESignProPage = () => {
+  const [conventions, setConventions] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { currentUser, hasRole, ROLES } = useAuth();
 
-  // Upload du PDF
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [uploadMessage, setUploadMessage] = useState('');
-
-  // Authentification OTP
-  const [otpInput, setOtpInput] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [authMessage, setAuthMessage] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Capture de signature
-  const [signatureMethod, setSignatureMethod] = useState('draw'); // 'draw', 'type', 'upload'
-  const sigCanvas = useRef(null);
-  const [typedSignature, setTypedSignature] = useState('');
-  const [uploadedSignature, setUploadedSignature] = useState(null);
-  const [signatureData, setSignatureData] = useState('');
-  const [signatureMessage, setSignatureMessage] = useState('');
-  const [hashValue, setHashValue] = useState('');
-
-  // Finalisation (PDF)
-  const [pdfMessage, setPdfMessage] = useState('');
-
-  // Simuler la génération d'un OTP lors du passage à l'étape d'authentification
+  // Récupérer les conventions et documents
   useEffect(() => {
-    if (currentStep === 1) {
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(otpCode);
-      // Simuler l'envoi de l'OTP (par ex. via email)
-      console.log("OTP généré:", otpCode);
-      setAuthMessage("Un code OTP a été envoyé à votre e-mail.");
-    }
-  }, [currentStep]);
-
-  // Fonction pour générer un hash SHA-256 de la signature (via SubtleCrypto)
-  const hashSignature = async (data) => {
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data);
-    const hashBuffer = await window.crypto.subtle.digest('SHA-256', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  };
-
-  // Gestion de l'upload du PDF
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      setUploadedFile(file);
-      setUploadMessage(`Fichier sélectionné : ${file.name}`);
+    const fetchData = async () => {
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('userId', 1); // Exemple
-        // Appel API simulé pour l'upload
-        const response = await axios.post('/api/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        setUploadMessage("Fichier uploadé avec succès.");
-        setCurrentStep(1); // Passe à l'étape d'authentification
+        setLoading(true);
+        
+        // Récupérer les conventions
+        const convResponse = await conventionApi.getAllConventions();
+        setConventions(convResponse.data.data);
+        
+        // Récupérer les documents
+        const docResponse = await documentApi.getAllDocuments();
+        setDocuments(docResponse.data.data);
       } catch (err) {
-        setUploadMessage("Erreur lors de l'upload du fichier.");
+        console.error('Erreur lors du chargement des données:', err);
+        setError('Impossible de charger les données');
+      } finally {
+        setLoading(false);
       }
-    } else {
-      alert("Veuillez sélectionner un fichier PDF.");
+    };
+
+    if (currentUser) {
+      fetchData();
     }
+  }, [currentUser]);
+
+  // Fonction pour afficher une section spécifique selon le rôle
+  const renderRoleSpecificSection = () => {
+    if (hasRole(ROLES.PROFESSEUR)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Gestion des conventions</h3>
+          <div className="action-buttons">
+            <Link to="/conventions/create" className="create-button">
+              Créer une nouvelle convention
+            </Link>
+            <Link to="/students" className="view-button">
+              Voir la liste des élèves
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+    if (hasRole(ROLES.ELEVE)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Mes stages</h3>
+          <div className="action-buttons">
+            <Link to="/conventions/create" className="create-button">
+              Demander une convention de stage
+            </Link>
+            {/* Afficher les conventions de l'élève avec option de génération de PDF */}
+            {conventions.length > 0 && (
+              <div className="student-conventions">
+                <h4>Mes conventions</h4>
+                <ul className="conventions-list">
+                  {conventions.map(conv => (
+                    <li key={conv.id}>
+                      <span>{conv.sujet_stage} - {conv.status}</span>
+                      <button 
+                        onClick={() => generateConventionPDF(conv.id)}
+                        className="action-button"
+                      >
+                        Télécharger PDF
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    if (hasRole(ROLES.PARENT)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Documents de mon enfant</h3>
+          <div className="action-buttons">
+            <Link to="/student-documents" className="view-button">
+              Voir les conventions à signer
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+    if (hasRole(ROLES.ENTREPRISE)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Gestion des stagiaires</h3>
+          <div className="action-buttons">
+            <Link to="/conventions/create" className="create-button">
+              Proposer un stage
+            </Link>
+            <Link to="/internships" className="view-button">
+              Gérer les stages en cours
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
   };
 
-  // Vérification OTP
-  const handleOtpVerification = () => {
-    if (otpInput === generatedOtp) {
-      setIsAuthenticated(true);
-      setAuthMessage("OTP vérifié avec succès.");
-      setCurrentStep(2); // Passe à la capture de signature
-    } else {
-      setAuthMessage("OTP invalide. Veuillez réessayer.");
-    }
-  };
-
-  // Gestion de la signature
-  const handleClearSignature = () => {
-    if (sigCanvas.current) {
-      sigCanvas.current.clear();
-      setSignatureData('');
-      setSignatureMessage('');
-    }
-  };
-
-  const handleSaveSignature = async () => {
-    let dataUrl = '';
-    if (signatureMethod === 'draw') {
-      if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
-        dataUrl = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-      } else {
-        alert("Veuillez dessiner votre signature.");
-        return;
-      }
-    } else if (signatureMethod === 'type') {
-      if (typedSignature.trim() !== '') {
-        // Pour une signature typée, on encode simplement le texte
-        dataUrl = `data:text/plain;base64,${btoa(typedSignature)}`;
-      } else {
-        alert("Veuillez saisir votre signature.");
-        return;
-      }
-    } else if (signatureMethod === 'upload') {
-      if (uploadedSignature) {
-        dataUrl = uploadedSignature;
-      } else {
-        alert("Veuillez uploader une image de votre signature.");
-        return;
-      }
-    }
-    setSignatureData(dataUrl);
-    // Générer un hash pour garantir l'intégrité de la signature
-    const hash = await hashSignature(dataUrl);
-    setHashValue(hash);
+  // Générer un PDF de convention
+  const generateConventionPDF = async (conventionId) => {
     try {
-      // Appel API simulé pour sauvegarder la signature
-      await axios.post('/api/sign', { conventionId: 1, signature: dataUrl, hash: hash, role: 'signataire' });
-      setSignatureMessage("Signature sauvegardée et validée.");
-      setCurrentStep(3); // Passe à la finalisation (génération du PDF)
-    } catch (error) {
-      setSignatureMessage("Erreur lors de la sauvegarde de la signature.");
+      setLoading(true);
+      
+      // Récupérer les données de la convention
+      const response = await conventionApi.getConvention(conventionId);
+      const conventionData = response.data.data;
+      
+      // Générer le PDF
+      const pdfResponse = await conventionApi.generatePDF(conventionData);
+      
+      // Créer un blob et télécharger le fichier
+      const blob = new Blob([pdfResponse.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.href = url;
+      link.setAttribute('download', `convention_${conventionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Erreur lors de la génération du PDF:', err);
+      setError('Impossible de générer le PDF');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Générer le PDF final
-  const handleGeneratePdf = async () => {
-    try {
-      await axios.post('/api/generate-pdf', { conventionId: 1 });
-      setPdfMessage("PDF final généré et archivé.");
-      setCurrentStep(4);
-    } catch (error) {
-      setPdfMessage("Erreur lors de la génération du PDF.");
-    }
-  };
+  // Déterminer si nous devons afficher la section générale des conventions
+  // Pour éviter la duplication pour les élèves
+  const shouldShowGeneralConventionsSection = !hasRole(ROLES.ELEVE);
+
+  if (loading) return <Loader />;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div style={{ padding: '2rem', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '8px', margin: '2rem auto', maxWidth: '900px' }}>
-      <h1>Processus de Signature Électronique</h1>
+    <div className="esign-pro-page">
+      <h2>Tableau de bord E-Sign Pro</h2>
+      
+      {/* Afficher le nom et le rôle de l'utilisateur */}
+      <div className="user-info">
+        <p>Connecté en tant que : {currentUser?.firstname} {currentUser?.lastname}</p>
+        <p>Rôle : {currentUser?.role}</p>
+      </div>
 
-      {currentStep === 0 && (
-        <section>
-          <h2>1. Upload de la Convention (PDF)</h2>
-          <input type="file" accept="application/pdf" onChange={handleFileUpload} />
-          <p>{uploadMessage}</p>
-        </section>
-      )}
+      {/* Section spécifique au rôle */}
+      {renderRoleSpecificSection()}
 
-      {currentStep === 1 && (
-        <section>
-          <h2>2. Authentification (OTP)</h2>
-          <p>{authMessage}</p>
-          <input type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)} placeholder="Entrez le code OTP" />
-          <button onClick={handleOtpVerification} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>Vérifier</button>
-        </section>
-      )}
-
-      {currentStep === 2 && (
-        <section>
-          <h2>3. Ajout de la Signature</h2>
-          <p>Choisissez votre méthode de signature :</p>
-          <div>
-            <label>
-              <input type="radio" name="signatureMethod" value="draw" checked={signatureMethod === 'draw'} onChange={() => setSignatureMethod('draw')} />
-              Dessiner
-            </label>
-            <label style={{ marginLeft: '1rem' }}>
-              <input type="radio" name="signatureMethod" value="type" checked={signatureMethod === 'type'} onChange={() => setSignatureMethod('type')} />
-              Taper
-            </label>
-            <label style={{ marginLeft: '1rem' }}>
-              <input type="radio" name="signatureMethod" value="upload" checked={signatureMethod === 'upload'} onChange={() => setSignatureMethod('upload')} />
-              Uploader une image
-            </label>
-          </div>
-
-          {signatureMethod === 'draw' && (
-            <div style={{ border: '2px solid #000', margin: '1rem 0' }}>
-              <SignatureCanvas ref={sigCanvas} penColor="black" canvasProps={{ width: 500, height: 200, className: 'sigCanvas' }} />
-            </div>
+      {/* Section des conventions - affichée pour tous sauf les élèves (qui ont déjà leur propre section) */}
+      {shouldShowGeneralConventionsSection && (
+        <div className="dashboard-section">
+          <h3>Mes conventions</h3>
+          {conventions.length === 0 ? (
+            <p>Aucune convention trouvée</p>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sujet</th>
+                  <th>Période</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {conventions.map(conv => (
+                  <tr key={conv.id}>
+                    <td>{conv.id}</td>
+                    <td>{conv.sujet_stage}</td>
+                    <td>{conv.date_debut} au {conv.date_fin}</td>
+                    <td>{conv.status}</td>
+                    <td>
+                      <button 
+                        onClick={() => generateConventionPDF(conv.id)}
+                        className="action-button"
+                      >
+                        Télécharger PDF
+                      </button>
+                      <Link to={`/conventions/${conv.id}`} className="action-link">
+                        Voir détails
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-
-          {signatureMethod === 'type' && (
-            <div>
-              <input type="text" value={typedSignature} onChange={(e) => setTypedSignature(e.target.value)} placeholder="Tapez votre signature" style={{ width: '500px', padding: '0.5rem' }} />
-            </div>
-          )}
-
-          {signatureMethod === 'upload' && (
-            <div>
-              <input type="file" accept="image/*" onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setUploadedSignature(reader.result);
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }} />
-            </div>
-          )}
-
-          <button onClick={handleSaveSignature} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>Sauvegarder la signature</button>
-          <p>{signatureMessage}</p>
-        </section>
+        </div>
       )}
-
-      {currentStep === 3 && (
-        <section>
-          <h2>4. Finalisation</h2>
-          <p>Toutes les étapes sont complétées. Cliquez ci-dessous pour générer le PDF final.</p>
-          <button onClick={handleGeneratePdf} style={{ padding: '0.5rem 1rem' }}>Générer le PDF</button>
-          <p>{pdfMessage}</p>
-        </section>
-      )}
-
-      {currentStep === 4 && (
-        <section>
-          <h2>Processus terminé</h2>
-          <p>Le document final a été généré et archivé. Vous recevrez une notification.</p>
-        </section>
-      )}
+      
+      <div className="dashboard-section">
+        <h3>Documents à signer</h3>
+        {documents.length === 0 ? (
+          <p>Aucun document à signer</p>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Date de création</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {documents.map(doc => (
+                <tr key={doc.id}>
+                  <td>{doc.title}</td>
+                  <td>{new Date(doc.created_at).toLocaleDateString()}</td>
+                  <td>{doc.status}</td>
+                  <td>
+                    <Link to={`/documents/${doc.id}/sign`} className="action-link">
+                      Signer
+                    </Link>
+                    <Link to={`/documents/${doc.id}/signatories`} className="action-link">
+                      Signataires
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };
 
-export default EnhancedESignProPage;
+export default ESignProPage;

@@ -20,15 +20,17 @@ class Convention {
   }
 
   /**
-   * Crée une nouvelle convention.
-   * @param {Object} data - Données de la convention.
-   * @returns {Promise<Convention>}
+   * Crée une nouvelle convention
+   * @param {Object} data - Propriétés de la convention à créer
+   * @returns {Promise<Convention>} Instance de la convention créée
    */
   static async create(data) {
     try {
+      // Requête SQL d'insertion avec valeurs paramétrées
       const sql = `
         INSERT INTO conventions 
-        (eleve_id, entreprise_id, date_debut, date_fin, nb_semaines, status, sujet_stage, gratification_montant, gratification_periode, horaires_travail)
+        (eleve_id, entreprise_id, date_debut, date_fin, nb_semaines, status, sujet_stage, 
+        gratification_montant, gratification_periode, horaires_travail)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       const result = await database.run(sql, [
@@ -37,12 +39,14 @@ class Convention {
         data.date_debut,
         data.date_fin,
         data.nb_semaines,
-        data.status || 'brouillon',
+        data.status || 'brouillon',  // Valeur par défaut
         data.sujet_stage,
         data.gratification_montant,
         data.gratification_periode,
         data.horaires_travail
       ]);
+      
+      // Retourne l'objet complet avec l'ID généré
       return await Convention.findById(result.lastID);
     } catch (error) {
       throw new ApiError(500, "Erreur lors de la création de la convention");
@@ -50,17 +54,20 @@ class Convention {
   }
 
   /**
-   * Récupère une convention par son ID.
-   * @param {number} id - ID de la convention.
-   * @returns {Promise<Convention>}
+   * Récupère une convention par son ID
+   * @param {number} id - ID de la convention à récupérer
+   * @returns {Promise<Convention>} Instance de la convention
    */
   static async findById(id) {
     try {
+      // N'inclut que les conventions non supprimées (soft delete)
       const sql = `SELECT * FROM conventions WHERE id = ? AND deleted_at IS NULL`;
       const row = await database.get(sql, [id]);
+      
       if (!row) {
         throw new ApiError(404, "Convention non trouvée");
       }
+      
       return new Convention(row);
     } catch (error) {
       throw new ApiError(500, "Erreur lors de la récupération de la convention");
@@ -68,35 +75,37 @@ class Convention {
   }
 
   /**
-   * Met à jour les informations d'une convention.
-   * @param {Object} updates - Champs à mettre à jour.
-   * @returns {Promise<Convention>}
+   * Met à jour les champs d'une convention existante
+   * @param {Object} updates - Champs à mettre à jour
+   * @returns {Promise<Convention>} Instance mise à jour
    */
   async update(updates) {
     try {
-      // Liste des champs autorisés à être mis à jour
+      // Liste des champs modifiables (sécurité)
       const allowedFields = [
-        'date_debut',
-        'date_fin',
-        'nb_semaines',
-        'status',
-        'sujet_stage',
-        'gratification_montant',
-        'gratification_periode',
-        'horaires_travail'
+        'date_debut', 'date_fin', 'nb_semaines', 'status',
+        'sujet_stage', 'gratification_montant', 'gratification_periode', 'horaires_travail'
       ];
+      
+      // Filtrer pour ne garder que les champs autorisés
       const fields = Object.keys(updates).filter(field => allowedFields.includes(field));
+      
       if (fields.length === 0) {
-        return this;
+        return this;  // Rien à mettre à jour
       }
+      
+      // Construction dynamique de la requête SQL
       const setClause = fields.map(field => `${field} = ?`).join(', ');
       const values = fields.map(field => updates[field]);
-      values.push(this.id);
+      values.push(this.id);  // Pour la clause WHERE
+      
       const sql = `UPDATE conventions SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
       await database.run(sql, values);
-      // Recharge la convention mise à jour
+      
+      // Recharger la convention mise à jour
       const updatedConvention = await Convention.findById(this.id);
-      Object.assign(this, updatedConvention);
+      Object.assign(this, updatedConvention);  // Mettre à jour l'instance courante
+      
       return this;
     } catch (error) {
       throw new ApiError(500, "Erreur lors de la mise à jour de la convention");
@@ -104,7 +113,8 @@ class Convention {
   }
 
   /**
-   * Effectue une suppression logique (soft delete) de la convention.
+   * Suppression logique (soft delete) d'une convention
+   * Marque la convention comme supprimée sans la retirer de la base
    * @returns {Promise<void>}
    */
   async softDelete() {
@@ -118,8 +128,9 @@ class Convention {
   }
 
   /**
-   * Renvoie un objet JSON sans les informations sensibles.
-   * @returns {Object}
+   * Convertit l'instance en objet JSON simple pour les API responses
+   * Exclut les champs sensibles ou techniques comme deleted_at
+   * @returns {Object} Objet convention formaté pour l'API
    */
   toJSON() {
     return {

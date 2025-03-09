@@ -1,52 +1,31 @@
-import api, { handleApiError } from './index';
-import { v4 as uuidv4 } from 'uuid';
+// frontend/src/services/api/documentApi.js
+import API from '../api';
 
-export const uploadDocument = async (file) => {
-  if (!file) {
-    throw new Error("Aucun fichier fourni");
-  }
+export const documentApi = {
+  // Récupérer un document par son ID
+  getDocument: (id) => {
+    return API.get(`/documents/${id}`);
+  },
   
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('id', uuidv4());
+  // Créer un nouveau document
+  createDocument: (documentData) => {
+    return API.post('/documents', documentData);
+  },
   
-  try {
-    const response = await api.post('/documents', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de l'upload du document");
+  // Mettre à jour un document
+  updateDocument: (id, documentData) => {
+    return API.put(`/documents/${id}`, documentData);
+  },
+  
+  // Mettre à jour les informations d'un étudiant dans un document
+  updateStudentInfo: (id, studentInfo) => {
+    return API.put(`/documents/${id}/student-info`, studentInfo);
+  },
+  
+  // Récupérer tous les documents
+  getAllDocuments: () => {
+    return API.get('/documents');
   }
 };
 
-export const getDocument = async (documentId) => {
-  try {
-    const response = await api.get(`/documents/${documentId}`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération du document");
-  }
-};
-
-export const generateEditableConvention = async () => {
-  try {
-    const response = await api.get('/documents/generate-editable-convention', {
-      responseType: 'blob'
-    });
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la génération de la convention éditable");
-  }
-};
-
-export const getUserDocuments = async () => {
-  try {
-    const response = await api.get('/documents');
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération des documents");
-  }
-};
+export default documentApi;

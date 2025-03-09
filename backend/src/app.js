@@ -1,3 +1,7 @@
+/**
+ * Configuration principale de l'application Express
+ * Définit les middlewares, la gestion CORS, et le montage des routes
+ */
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
@@ -12,22 +16,22 @@ const database = require('./config/database');
 
 const app = express();
 
-// Middleware de sécurité avec Helmet pour sécuriser les headers HTTP
+// Sécurisation des en-têtes HTTP avec Helmet
 app.use(helmet());
 
-// Configuration de CORS pour autoriser le front-end à accéder aux ressources
+// Configuration CORS pour permettre l'accès depuis le frontend
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 app.use(cors({
   origin: FRONTEND_URL,
-  credentials: true, // Permet l'envoi de cookies, headers d'authentification, etc.
+  credentials: true, // Autorise l'envoi de cookies et tokens d'authentification
 }));
 
-// Middleware pour parser les corps de requêtes et les cookies
+// Middlewares pour parser les requêtes et cookies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Logging en mode développement
+// Logging des requêtes en développement
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -43,16 +47,16 @@ database.connect()
 // Montage des routes sous le préfixe /api
 app.use('/api', routes);
 
-// Middleware de gestion des erreurs (centralise le traitement des erreurs)
+// Middleware centralisé de gestion d'erreurs
 app.use(errorHandler);
 
-// Gestion des promesses non attrapées
+// Gestion des promesses non capturées
 process.on('unhandledRejection', (err) => {
   console.error('Erreur non gérée:', err);
   process.exit(1);
 });
 
-// Affiche toutes les routes dans la console
+// Affichage des routes disponibles (utile pour le débogage)
 console.log('Endpoints de l\'app :', listEndpoints(app));
 
 module.exports = app;

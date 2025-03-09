@@ -1,89 +1,107 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+// frontend/src/components/SignaturePage.js
+import React, { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
-import { getSignatureProgress, updateSignature } from '../services/api';
+import { documentApi } from '../services/api/documentApi';
+import { signatureApi } from '../services/api/signatureApi';
 import Loader from './Loader';
 
 const SignaturePage = () => {
-  const location = useLocation();
+  const { documentId } = useParams();
   const navigate = useNavigate();
+  const [document, setDocument] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const signatureRef = useRef();
 
-  const documentId = location.state?.documentId || localStorage.getItem('documentId') || 'default-doc';
-  const fileName = location.state?.fileName || localStorage.getItem('fileName') || 'default.pdf';
-
-  const [progression, setProgression] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const signatureRef = useRef(null);
-
-  console.log('Location state:', location.state);
-
+  // Récupérer le document à signer
   useEffect(() => {
-    if (documentId && documentId !== 'default-doc') {
-      const fetchProgress = async () => {
-        try {
-          const response = await getSignatureProgress(documentId);
-          setProgression(Array.isArray(response) ? response : []);
-        } catch (error) {
-          console.error('Error fetching signature progress:', error);
-        }
-      };
-      fetchProgress();
+    const fetchDocument = async () => {
+      try {
+        setLoading(true);
+        const response = await documentApi.getDocument(documentId);
+        setDocument(response.data.data);
+      } catch (err) {
+        console.error('Erreur de récupération du document:', err);
+        setError('Impossible de charger le document');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (documentId) {
+      fetchDocument();
     }
   }, [documentId]);
 
+  // Effacer la signature
+  const clearSignature = () => {
+    signatureRef.current.clear();
+  };
+
+  // Sauvegarder la signature
   const saveSignature = async () => {
-    if (signatureRef.current && !signatureRef.current.isEmpty()) {
-      const signature = signatureRef.current.getTrimmedCanvas().toDataURL('image/png');
-      console.log("Signature retrieved:", signature);
-      setIsLoading(true);
-      try {
-        const response = await updateSignature({
-          documentId,
-          role: 'Étudiant',
-          status: 'Terminé',
-          signature,
-        });
-        console.log('Signature updated:', response);
-        navigate('/confirmation', { state: { fileName, signature } });
-      } catch (error) {
-        console.error('Error updating signature:', error);
-        alert('Erreur lors de la sauvegarde de la signature. Veuillez réessayer.');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      alert('Veuillez signer avant de confirmer.');
+    if (signatureRef.current.isEmpty()) {
+      setError('Veuillez signer le document');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Convertir la signature en données URL
+      const signatureData = signatureRef.current.toDataURL('image/png');
+      
+      // Envoyer la signature au serveur
+      await signatureApi.signDocument(documentId, signatureData);
+      
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/confirmation');
+      }, 2000);
+    } catch (err) {
+      console.error('Erreur lors de la signature:', err);
+      setError('Impossible d\'enregistrer la signature');
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) return <Loader />;
+  if (error) return <div className="error-message">{error}</div>;
+  if (success) return <div className="success-message">Document signé avec succès !</div>;
+
   return (
-    <div className="signature-page" style={{ padding: '20px' }}>
-      <h1>Ajoutez votre signature</h1>
-      {/* Affichage de debug */}
-      <pre>{JSON.stringify({ documentId, fileName }, null, 2)}</pre>
-      <div style={{ border: '1px solid #000', marginBottom: '20px' }}>
+    <div className="signature-page">
+      <h2>Signer le document</h2>
+      
+      {document && (
+        <div className="document-preview">
+          <h3>{document.title}</h3>
+          <p>Veuillez apposer votre signature ci-dessous :</p>
+        </div>
+      )}
+      
+      <div className="signature-container">
         <SignatureCanvas
           ref={signatureRef}
-          canvasProps={{ width: 500, height: 200, className: 'signature-canvas' }}
-          backgroundColor="#fff"
-          penColor="black"
+          penColor='black'
+          canvasProps={{
+            width: 500,
+            height: 200,
+            className: 'signature-canvas'
+          }}
         />
       </div>
-      <div>
-        <button
-          onClick={saveSignature}
-          style={{ marginRight: '10px', padding: '10px', backgroundColor: '#4CAF50', color: '#fff' }}
-        >
-          Confirmer la signature
-        </button>
-        <button
-          onClick={() => signatureRef.current && signatureRef.current.clear()}
-          style={{ padding: '10px', backgroundColor: '#f44336', color: '#fff' }}
-        >
+      
+      <div className="signature-actions">
+        <button onClick={clearSignature} className="clear-button">
           Effacer
         </button>
+        <button onClick={saveSignature} className="save-button">
+          Signer le document
+        </button>
       </div>
-      {isLoading && <Loader />}
     </div>
   );
 };

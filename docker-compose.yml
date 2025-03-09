@@ -4,12 +4,16 @@ services:
       context: ./backend
     ports:
       - "5050:5050"
+    networks:
+      - app-network
 
   frontend:
     build:
       context: ./frontend
     ports:
       - "3000:3000"
+    networks:
+      - app-network
 
   proxy:
     build:
@@ -19,3 +23,9 @@ services:
     depends_on:
       - backend
       - frontend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

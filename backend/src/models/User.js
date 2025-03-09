@@ -27,6 +27,15 @@ class User {
         throw new ApiError(409, 'Cet email est déjà utilisé');
       }
 
+          // Vérifier si le rôle est valide
+    const { ROLES } = require('../config/roles');
+    if (role && !Object.values(ROLES).includes(role)) {
+      throw new ApiError(400, 'Rôle invalide');
+    }
+    
+    // Utiliser un rôle par défaut si non fourni
+    const userRole = role || ROLES.ELEVE;
+
       // Hasher le mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -34,7 +43,7 @@ class User {
       const result = await database.run(
         `INSERT INTO users (email, password, firstname, lastname, role)
          VALUES (?, ?, ?, ?, ?)`,
-        [email, hashedPassword, firstname, lastname, role]
+        [email, hashedPassword, firstname, lastname, userRole]
       );
 
       // Récupérer l'utilisateur créé
@@ -229,6 +238,16 @@ async canSignDocument(documentId) {
 }
 
 /**
+ * Exécute une requête renvoyant plusieurs lignes (alias de query)
+ * @param {string} sql - Requête SQL
+ * @param {Array} params - Paramètres pour la requête préparée
+ * @returns {Promise<Array>} Résultats de la requête
+ */
+all(sql, params = []) {
+  return this.query(sql, params);
+}
+
+/**
  * Désactiver temporairement un compte utilisateur
  * @returns {Promise<void>}
  */
@@ -242,6 +261,8 @@ async deactivateAccount() {
     throw new ApiError(500, 'Erreur lors de la désactivation du compte');
   }
 }
+
+
   // Méthode pour obtenir un objet utilisateur sans données sensibles
   toJSON() {
     return {

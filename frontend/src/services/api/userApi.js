@@ -1,72 +1,36 @@
-import api, { handleApiError } from './index';
+// frontend/src/services/api/userApi.js
+import API from '../api';
 
-export const register = async (userData) => {
-  try {
-    const response = await api.post('/users/register', userData);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de l'inscription");
+export const userApi = {
+  // Inscription d'un nouvel utilisateur
+  register: (userData) => {
+    return API.post('/users/register', userData);
+  },
+  
+  // Connexion utilisateur
+  login: (credentials) => {
+    return API.post('/users/login', credentials);
+  },
+  
+  // Déconnexion
+  logout: () => {
+    return API.post('/users/logout');
+  },
+  
+  // Récupérer le profil utilisateur
+  getProfile: () => {
+    return API.get('/users/profile');
+  },
+  
+  // Mettre à jour le profil
+  updateProfile: (profileData) => {
+    return API.put('/users/profile', profileData);
+  },
+  
+  // Changer de mot de passe
+  changePassword: (passwordData) => {
+    return API.post('/users/change-password', passwordData);
   }
 };
 
-export const login = async (credentials) => {
-  try {
-    const response = await api.post('/users/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la connexion");
-  }
-};
-
-export const getProfile = async () => {
-  try {
-    const response = await api.get('/users/profile');
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération du profil");
-  }
-};
-
-export const updateProfile = async (userData) => {
-  try {
-    const response = await api.put('/users/profile', userData);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la mise à jour du profil");
-  }
-};
-
-export const changePassword = async (passwordData) => {
-  try {
-    const response = await api.post('/users/change-password', passwordData);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors du changement de mot de passe");
-  }
-};
-
-export const logout = async () => {
-  try {
-    const response = await api.post('/users/logout');
-    localStorage.removeItem('token');
-    return response.data;
-  } catch (error) {
-    localStorage.removeItem('token');
-    return handleApiError(error, "Erreur lors de la déconnexion");
-  }
-};
-
-export const refreshToken = async () => {
-  try {
-    const response = await api.post('/users/refresh-token');
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors du rafraîchissement du token");
-  }
-};
+export default userApi;

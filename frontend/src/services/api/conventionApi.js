@@ -1,63 +1,38 @@
-import api, { handleApiError } from './index';
+// frontend/src/services/api/conventionApi.js
+import API from '../api';
 
-// Créer une nouvelle convention
-export const createConvention = async (conventionData) => {
-  try {
-    const response = await api.post('/conventions/create', conventionData);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la création de la convention");
-  }
-};
-
-// Enregistrer un brouillon de convention (étape par étape)
-export const saveConventionDraft = async (conventionData, step) => {
-  try {
-    const response = await api.post('/conventions/draft', { conventionData, step });
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de l'enregistrement du brouillon");
-  }
-};
-
-// Récupérer une convention par son ID
-export const getConvention = async (conventionId) => {
-  try {
-    const response = await api.get(`/conventions/${conventionId}`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération de la convention");
-  }
-};
-
-// Soumettre une convention pour signature
-export const submitConventionForSignature = async (conventionId) => {
-  try {
-    const response = await api.post(`/conventions/${conventionId}/submit`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la soumission de la convention");
-  }
-};
-
-// Générer le PDF de la convention
-export const generateConventionPDF = async (conventionId) => {
-  try {
-    const response = await api.get(`/conventions/${conventionId}/pdf`, {
-      responseType: 'blob'
+export const conventionApi = {
+  // Récupérer une convention par son ID
+  getConvention: (id) => {
+    return API.get(`/conventions/${id}`);
+  },
+  
+  // Créer une nouvelle convention
+  createConvention: (conventionData) => {
+    return API.post('/conventions', conventionData);
+  },
+  
+  // Mettre à jour une convention existante
+  updateConvention: (id, conventionData) => {
+    return API.put(`/conventions/${id}`, conventionData);
+  },
+  
+  // Supprimer une convention
+  deleteConvention: (id) => {
+    return API.delete(`/conventions/${id}`);
+  },
+  
+  // Générer le PDF d'une convention
+  generatePDF: (conventionData) => {
+    return API.post('/conventions/generate-pdf', conventionData, {
+      responseType: 'blob' // Important pour recevoir des données binaires
     });
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la génération du PDF");
+  },
+  
+  // Récupérer toutes les conventions
+  getAllConventions: () => {
+    return API.get('/conventions');
   }
 };
 
-// Récupérer les conventions de l'utilisateur connecté
-export const getUserConventions = async () => {
-  try {
-    const response = await api.get('/conventions/user');
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération des conventions");
-  }
-};
+export default conventionApi;

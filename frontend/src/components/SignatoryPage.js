@@ -1,92 +1,143 @@
-import React, { useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import SignatureCanvas from 'react-signature-canvas';
-import { updateSignature } from '../services/api';
+// frontend/src/components/SignatoryPage.js
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { documentApi } from '../services/api/documentApi';
+import { signatureApi } from '../services/api/signatureApi';
 import Loader from './Loader';
 
 const SignatoryPage = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { documentId } = useParams();
+  const [document, setDocument] = useState(null);
+  const [signatories, setSignatories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [newSignatory, setNewSignatory] = useState({ email: '', role: 'ELEVE' });
 
-  // Récupération des données transmises
-  // On attend que location.state contienne: documentId, fileName, currentIndex
-  const { documentId, fileName, currentIndex } = location.state || {};
-  const signatureOrder = ['Étudiant', 'Parent', 'Entreprise', 'Équipe pédagogique'];
-  
-  // Si ces données ne sont pas présentes, rediriger vers l'accueil
-  if (!documentId || currentIndex === undefined) {
-    navigate('/');
-    return null;
-  }
-  
-  const role = signatureOrder[currentIndex];
-  const [isLoading, setIsLoading] = useState(false);
-  const signatureRef = useRef(null);
-
-  const handleSaveSignature = async () => {
-    if (signatureRef.current && !signatureRef.current.isEmpty()) {
-      const signature = signatureRef.current.getTrimmedCanvas().toDataURL('image/png');
-      setIsLoading(true);
+  // Récupérer le document et les signataires
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        // On simule la mise à jour de la signature pour le rôle actuel
-        await updateSignature({
-          documentId,
-          role,
-          status: 'Terminé',
-          signature,
-        });
-        console.log(`Signature enregistrée pour le rôle ${role}`);
-
-        // Calcul du rôle suivant
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < signatureOrder.length) {
-          // Redirige vers la même page avec l'indice suivant
-          navigate('/signatory', {
-            state: { documentId, fileName, currentIndex: nextIndex }
-          });
-        } else {
-          // Si tous les rôles ont signé, redirige vers la page de confirmation finale
-          navigate('/confirmation', { state: { fileName, documentId } });
-        }
-      } catch (error) {
-        console.error('Erreur lors de la sauvegarde de la signature:', error);
-        alert('Erreur lors de la sauvegarde de la signature. Veuillez réessayer.');
+        setLoading(true);
+        // Récupérer le document
+        const docResponse = await documentApi.getDocument(documentId);
+        setDocument(docResponse.data.data);
+        
+        // Récupérer l'historique des signatures
+        const sigResponse = await signatureApi.getSignatureHistory(documentId);
+        setSignatories(sigResponse.data.data);
+      } catch (err) {
+        console.error('Erreur lors du chargement des données:', err);
+        setError('Impossible de charger les informations');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    } else {
-      alert('Veuillez signer avant de confirmer.');
+    };
+
+    if (documentId) {
+      fetchData();
+    }
+  }, [documentId]);
+
+  // Gérer les changements dans le formulaire
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewSignatory(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Ajouter un signataire
+  const addSignatory = async (e) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      // Appel API pour ajouter un signataire (à adapter selon ton API)
+      await documentApi.addSignatory(documentId, newSignatory);
+      
+      // Rafraîchir la liste des signataires
+      const sigResponse = await signatureApi.getSignatureHistory(documentId);
+      setSignatories(sigResponse.data.data);
+      
+      // Réinitialiser le formulaire
+      setNewSignatory({ email: '', role: 'ELEVE' });
+    } catch (err) {
+      console.error('Erreur lors de l\'ajout du signataire:', err);
+      setError('Impossible d\'ajouter le signataire');
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) return <Loader />;
+  if (error) return <div className="error-message">{error}</div>;
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Signature pour : {role}</h1>
-      {/* Simulation de l'étape d'authentification */}
-      <p>Un code OTP a été envoyé à votre email pour vérifier votre identité. (Simulation)</p>
-      <div style={{ border: '1px solid #000', marginBottom: '20px' }}>
-        <SignatureCanvas
-          ref={signatureRef}
-          canvasProps={{ width: 500, height: 200, className: 'signature-canvas' }}
-          backgroundColor="#fff"
-          penColor="black"
-        />
+    <div className="signatories-page">
+      <h2>Signataires du document</h2>
+      
+      {document && (
+        <div className="document-info">
+          <h3>{document.title}</h3>
+          <p>Statut: {document.status}</p>
+        </div>
+      )}
+      
+      <div className="signatories-list">
+        <h3>Signataires actuels</h3>
+        {signatories.length === 0 ? (
+          <p>Aucun signataire pour le moment</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Rôle</th>
+                <th>Date de signature</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {signatories.map((sig, index) => (
+                <tr key={index}>
+                  <td>{sig.firstname} {sig.lastname}</td>
+                  <td>{sig.role}</td>
+                  <td>{sig.signed_at ? new Date(sig.signed_at).toLocaleString() : 'Non signé'}</td>
+                  <td>{sig.signed_at ? 'Signé' : 'En attente'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
-      <div>
-        <button
-          onClick={handleSaveSignature}
-          style={{ marginRight: '10px', padding: '10px', backgroundColor: '#4CAF50', color: '#fff' }}
-        >
-          Confirmer la signature pour {role}
-        </button>
-        <button
-          onClick={() => signatureRef.current && signatureRef.current.clear()}
-          style={{ padding: '10px', backgroundColor: '#f44336', color: '#fff' }}
-        >
-          Effacer
-        </button>
+      
+      <div className="add-signatory-form">
+        <h3>Ajouter un signataire</h3>
+        <form onSubmit={addSignatory}>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={newSignatory.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Rôle</label>
+            <select name="role" value={newSignatory.role} onChange={handleChange}>
+              <option value="ELEVE">Élève</option>
+              <option value="TUTEUR">Tuteur</option>
+              <option value="PROFESSEUR">Professeur</option>
+              <option value="ADMIN">Administrateur</option>
+            </select>
+          </div>
+          
+          <button type="submit" className="add-button">
+            Ajouter le signataire
+          </button>
+        </form>
       </div>
-      {isLoading && <Loader />}
     </div>
   );
 };

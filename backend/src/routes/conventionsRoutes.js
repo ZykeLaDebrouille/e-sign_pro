@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { auth, checkRole } = require('../middleware/auth');
 const conventionController = require('../controllers/conventionController');
+const { auth, checkRole, checkPermission } = require('../middleware/auth');
+const { ROLES } = require('../config/roles');
 
 // Route pour créer une nouvelle convention
-router.post(
-  '/',
-  auth,
-  checkRole(['ADMIN', 'PROFESSEUR', 'ELEVE']),
-  conventionController.generateConventionPDF
-);
+// Routes accessibles uniquement aux professeurs et entreprises
+/*router.post(
+  '/', 
+  auth, 
+  checkRole([ROLES.PROFESSEUR, ROLES.ENTREPRISE, ROLES.ADMIN]), 
+  conventionController.createConvention
+);*/
 
 // Route pour tester l'endpoint
 router.get('/test',(req, res,) =>
@@ -20,8 +22,25 @@ router.get('/test',(req, res,) =>
 router.get(
   '/:id',
   auth,
+  checkRole(['ADMIN', 'PROFESSEUR']),
   conventionController.getConventionById
 );
+
+// Routes accessibles avec la permission spécifique
+router.get(
+  '/:id',
+  auth,
+  checkPermission('view_own_documents'),
+  conventionController.getConventionById
+);
+
+/*  Routes de signature accessibles à tous les rôles
+/ router.post(
+  '/:id/sign',
+  auth,
+  checkPermission('sign_document'),
+  conventionController.signConvention
+);*/
 
 // Route pour mettre à jour une convention existante
 router.put(
