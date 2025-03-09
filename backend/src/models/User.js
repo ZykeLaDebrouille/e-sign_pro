@@ -22,39 +22,46 @@ class User {
         'SELECT email FROM users WHERE email = ?',
         [email]
       );
-
+  
       if (existingUser) {
         throw new ApiError(409, 'Cet email est déjà utilisé');
       }
-
-          // Vérifier si le rôle est valide
-    const { ROLES } = require('../config/roles');
-    if (role && !Object.values(ROLES).includes(role)) {
-      throw new ApiError(400, 'Rôle invalide');
-    }
-    
-    // Utiliser un rôle par défaut si non fourni
-    const userRole = role || ROLES.ELEVE;
-
+  
+      // Vérifier si le rôle est valide
+      const { ROLES } = require('../config/roles');
+      const validRoles = Object.values(ROLES);
+      
+      // Utiliser un rôle par défaut si non fourni ou invalide
+      const userRole = (role && validRoles.includes(role)) ? role : ROLES.ELEVE;
+  
       // Hasher le mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
-
+  
+      console.log('Insertion dans la BD avec les valeurs:', { email, hashedPassword, firstname, lastname, userRole });
+      
       // Insérer l'utilisateur
       const result = await database.run(
         `INSERT INTO users (email, password, firstname, lastname, role)
          VALUES (?, ?, ?, ?, ?)`,
         [email, hashedPassword, firstname, lastname, userRole]
       );
-
+  
+      console.log('Résultat de l\'insertion:', result);
+  
       // Récupérer l'utilisateur créé
       const newUser = await database.get(
         'SELECT * FROM users WHERE id = ?',
         [result.id]
       );
-
+  
+      if (!newUser) {
+        throw new Error('Utilisateur non trouvé après création');
+      }
+  
       return new User(newUser);
     } catch (error) {
-      throw new ApiError(500, 'Erreur lors de la création de l\'utilisateur');
+      console.error('Erreur lors de la création de l\'utilisateur:', error);
+      throw error instanceof ApiError ? error : new ApiError(500, 'Erreur lors de la création de l\'utilisateur: ' + error.message);
     }
   }
 

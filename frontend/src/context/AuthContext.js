@@ -2,7 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { userApi } from '../services/api/userApi';
 
-// Définition des rôles côté frontend
+// Rôles disponibles
 export const ROLES = {
   ADMIN: 'ADMIN',
   ELEVE: 'ELEVE',
@@ -31,17 +31,23 @@ export const AuthProvider = ({ children }) => {
       
       if (storedUser && token) {
         try {
-          // Convertir l'utilisateur stocké en objet
-          const user = JSON.parse(storedUser);
-          setCurrentUser(user);
+          // Définir l'utilisateur stocké d'abord
+          setCurrentUser(JSON.parse(storedUser));
           
-          // Optionnel: vérifier la validité du token avec une requête API
-          setCurrentUser(response.data.data.user);
+          // Puis vérifier l'authenticité auprès du serveur
+          try {
+            const response = await userApi.checkAuth();
+            if (response.data && response.data.data && response.data.data.user) {
+              setCurrentUser(response.data.data.user);
+              // Mettre à jour le stockage local
+              localStorage.setItem('user', JSON.stringify(response.data.data.user));
+            }
+          } catch (err) {
+            console.log('Session expirée, maintien de l\'utilisateur local');
+          }
         } catch (err) {
-          // En cas d'erreur, nettoyer le stockage local
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          setError('Session expirée. Veuillez vous reconnecter.');
+          console.error('Erreur dans checkAuth:', err);
+          // Ne pas déconnecter tout de suite
         }
       }
       
@@ -60,23 +66,6 @@ export const AuthProvider = ({ children }) => {
     return currentUser.role === roles;
   };
 
-  // Vérifier si l'utilisateur a une permission
-  const checkPermission = (permission) => {
-    if (!currentUser) return false;
-    
-    // Mapping simplifié des permissions
-    const rolePermissions = {
-      ADMIN: ['*'],
-      ELEVE: ['create_convention', 'sign_document', 'view_own_documents', 'edit_profile'],
-      PARENT: ['sign_document', 'view_student_documents', 'edit_profile'],
-      PROFESSEUR: ['create_convention', 'view_students', 'sign_document', 'edit_profile'],
-      ENTREPRISE: ['sign_document', 'view_own_conventions', 'create_convention', 'edit_profile']
-    };
-
-    const userPermissions = rolePermissions[currentUser.role] || [];
-    return userPermissions.includes('*') || userPermissions.includes(permission);
-  };
-
   // Fonction de connexion
   const login = async (email, password) => {
     try {
@@ -84,14 +73,22 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       
       const response = await userApi.login({ email, password });
-      const { user, accessToken } = response.data.data;
+      console.log('Réponse de login:', response.data);
       
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('user', JSON.stringify(user));
-      setCurrentUser(user);
-      
-      return user;
+      if (response.data && response.data.data) {
+        const { user, accessToken } = response.data.data;
+        
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('user', JSON.stringify(user));
+        setCurrentUser(user);
+        
+        console.log('Utilisateur connecté:', user);
+        return user;
+      } else {
+        throw new Error('Format de réponse invalide');
+      }
     } catch (err) {
+      console.error('Erreur de connexion:', err);
       setError(err.response?.data?.message || 'Échec de la connexion');
       throw err;
     } finally {
@@ -105,15 +102,23 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
+      console.log('Envoi de demande d\'inscription:', userData);
       const response = await userApi.register(userData);
-      const { user, accessToken } = response.data.data;
+      console.log('Réponse d\'inscription:', response.data);
       
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('user', JSON.stringify(user));
-      setCurrentUser(user);
-      
-      return user;
+      if (response.data && response.data.data) {
+        const { user, accessToken } = response.data.data;
+        
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('user', JSON.stringify(user));
+        setCurrentUser(user);
+        
+        return user;
+      } else {
+        throw new Error('Format de réponse invalide');
+      }
     } catch (err) {
+      console.error('Erreur d\'inscription:', err);
       setError(err.response?.data?.message || 'Échec de l\'inscription');
       throw err;
     } finally {
@@ -126,7 +131,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await userApi.logout();
     } catch (err) {
-      console.error('Erreur lors de la déconnexion:', err);
+      console.error('Erreur de déconnexion:', err);
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -134,7 +139,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Valeur du contexte avec les nouvelles fonctions
+  // Valeur du contexte avec les fonctions
   const value = {
     currentUser,
     loading,
@@ -143,7 +148,6 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     hasRole,
-    checkPermission,
     ROLES
   };
 
@@ -154,5 +158,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Exportation pour l'utilisation dans d'autres fichiers
+// Export pour l'utilisation avec useContext
 export { AuthContext };

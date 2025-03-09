@@ -12,6 +12,7 @@ router.post('/refresh-token', userController.refreshToken.bind(userController));
 // Routes protégées
 router.use(auth);
 
+router.get('/check-auth', auth, userController.checkAuth);
 router.get('/profile', userController.getProfile.bind(userController));
 router.put('/profile', userController.updateProfile.bind(userController));
 router.post('/change-password', userController.changePassword.bind(userController));

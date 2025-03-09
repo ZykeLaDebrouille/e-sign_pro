@@ -20,11 +20,20 @@ const app = express();
 app.use(helmet());
 
 // Configuration CORS pour permettre l'accès depuis le frontend
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-app.use(cors({
-  origin: FRONTEND_URL,
-  credentials: true, // Autorise l'envoi de cookies et tokens d'authentification
-}));
+const corsOptions = {
+  origin: function(origin, callback) {
+    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost,http://localhost:3000').split(',');
+    // Permettre les requêtes sans origine (comme les applications mobiles ou postman)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par CORS'));
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 // Middlewares pour parser les requêtes et cookies
 app.use(express.json());

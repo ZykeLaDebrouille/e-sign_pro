@@ -1,33 +1,39 @@
 // frontend/src/services/api.js
 import axios from 'axios';
 
-// Instance Axios configurée pour ton projet
 const API = axios.create({
-  baseURL: '/api', // Chemin relatif qui sera géré par le proxy Nginx
-  timeout: 5000,
+  baseURL: '/api',
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true // Important pour les cookies
 });
 
-// Intercepteur pour ajouter automatiquement le token JWT à chaque requête
+// Intercepteur pour ajouter le token JWT
 API.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, error => {
+  return Promise.reject(error);
 });
 
-// Gestion globale des erreurs
+// Intercepteur pour gérer les erreurs
 API.interceptors.response.use(
   response => response,
   error => {
-    // Gérer les erreurs 401 (non authentifié)
+    // Log de l'erreur
+    console.error('Erreur API:', error.response || error.message);
+    
+    // Gestion des erreurs d'authentification
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      console.log('Session expirée ou non authentifiée');
+      // Ne pas déconnecter tout de suite pour éviter des boucles
     }
+    
     return Promise.reject(error);
   }
 );

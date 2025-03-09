@@ -1,23 +1,12 @@
-/**
- * Middleware d'authentification et d'autorisation
- * Vérifie les tokens JWT et les permissions utilisateur
- */
+// backend/src/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/User');
 const { hasPermission } = require('../config/roles');
 
-/**
- * Middleware principal d'authentification
- * Vérifie le token JWT et ajoute l'utilisateur à la requête
- * 
- * @param {Request} req - Objet requête Express
- * @param {Response} res - Objet réponse Express
- * @param {Function} next - Fonction de passage au middleware suivant
- */
 const auth = async (req, res, next) => {
   try {
-    // Récupère le token depuis les cookies ou l'en-tête Authorization
+    // Vérifier le token dans les cookies ou dans le header Authorization
     const token = req.cookies.accessToken || 
                   (req.headers.authorization && req.headers.authorization.split(' ')[1]);
 
@@ -25,20 +14,19 @@ const auth = async (req, res, next) => {
       throw new ApiError(401, 'Authentification requise');
     }
 
-    // Vérifie et décode le token JWT
+    // Vérifier et décoder le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Récupère l'utilisateur depuis la base de données
+    // Récupérer l'utilisateur
     const user = await User.findById(decoded.userId);
     if (!user) {
       throw new ApiError(401, 'Utilisateur non trouvé');
     }
 
-    // Ajoute l'utilisateur à l'objet requête pour les handlers suivants
+    // Ajouter l'utilisateur à la requête
     req.user = user;
     next();
   } catch (error) {
-    // Gestion spécifique des erreurs JWT
     if (error.name === 'JsonWebTokenError') {
       next(new ApiError(401, 'Token invalide'));
     } else if (error.name === 'TokenExpiredError') {
@@ -49,13 +37,6 @@ const auth = async (req, res, next) => {
   }
 };
 
-/**
- * Middleware de vérification des rôles
- * À utiliser après le middleware auth
- * 
- * @param {Array} roles - Liste des rôles autorisés
- * @returns {Function} Middleware de vérification
- */
 const checkRole = (roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -63,22 +44,13 @@ const checkRole = (roles) => {
     }
     
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Accès refusé : rôle non autorisé' });
+      return res.status(403).json({ message: 'Accès refusé: rôle non autorisé' });
     }
     
     next();
   };
 };
 
-// Vérification des permissions basée sur le rôle
-/**
- * Middleware qui vérifie si l'utilisateur possède la permission requise selon son rôle.
- * 
- * @param {string} permission - La permission requise pour accéder à la route
- * @returns {Function} Middleware Express qui vérifie les permissions de l'utilisateur
- * @throws {Object} Renvoie un statut 401 si l'utilisateur n'est pas authentifié
- * @throws {Object} Renvoie un statut 403 si l'utilisateur n'a pas la permission requise
- */
 const checkPermission = (permission) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -86,7 +58,7 @@ const checkPermission = (permission) => {
     }
     
     if (!hasPermission(req.user.role, permission)) {
-      return res.status(403).json({ message: 'Accès refusé : permission non accordée' });
+      return res.status(403).json({ message: 'Accès refusé: permission non accordée' });
     }
     
     next();
