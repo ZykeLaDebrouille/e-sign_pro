@@ -1,18 +1,29 @@
 /* src/index.css */
+
+/* Styles généraux */
 html, body {
 	margin: 0;
 	padding: 0;
 	font-family: 'Helvetica Neue', Arial, sans-serif;
-	background: transparent;
 	height: 100%;
   }
   
-  /* La classe app-container est utilisée dans AppRoutes pour le fond d'écran */
-  .app-container {
-	position: relative;
+  #root {
+	height: 100%;
   }
   
-  /* Ajout d'un overlay sombre pour améliorer le contraste du texte */
+  /* Conteneur principal de l'application avec fond d'écran */
+  .app-container {
+	background-image: url('/images/background.jpg');
+	background-size: cover;
+	background-position: center;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+  }
+
+  
+  /* Overlay pour améliorer la lisibilité du contenu */
   .app-container::before {
 	content: "";
 	position: absolute;
@@ -24,47 +35,32 @@ html, body {
 	z-index: 0;
   }
   
-  /* Tout le contenu de l'application doit être au-dessus de l'overlay */
   .app-container > * {
 	position: relative;
 	z-index: 1;
   }
   
-  /* Navbar : style sobre et épuré */
-  nav {
-	background-color: rgba(255, 255, 255, 0.9);
-	padding: 1rem;
-  }
-  
-  nav ul {
-	list-style: none;
-	display: flex;
-	gap: 1rem;
-	margin: 0;
-	padding: 0;
-  }
-  
-  nav ul li a {
-	text-decoration: none;
-	color: #333;
-	font-weight: bold;
-  }
-  
-  /* Style général pour les pages */
+  /* Styles pour les pages principales */
   .home-page,
   .contact-page,
   .about-page,
-  .esignpro-page {
-	padding: 2rem;
+  .esignpro-page,
+  .profile-page {
 	margin: 2rem auto;
-	max-width: 800px;
-	background-color: rgba(255, 255, 255, 0.85);
+	padding: 1rem;
+	max-width: 90%;
+	background-color: rgba(255, 255, 255, 0.95);
 	border-radius: 8px;
 	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
   
-  /* Un exemple de style pour les titres */
-  h1, h2 {
-	color: #333;
+  @media (min-width: 1024px) {
+	.home-page,
+	.contact-page,
+	.about-page,
+	.esignpro-page,
+	.profile-page {
+	  max-width: 800px;
+	}
   }
   
