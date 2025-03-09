@@ -51,7 +51,7 @@ class UserController {
     }
   });
   console.log('Utilisateur créé avec succès:', user);
-  console.log('Token généré:', accessToken);
+  console.log('Token généré:', hiddenToken(accessToken));
   } catch (error) {
   console.error('Erreur lors de l\'inscription:', error);
   next(error);
