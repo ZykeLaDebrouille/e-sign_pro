@@ -11,11 +11,19 @@ const RegisterPage = () => {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
+  const [emailValid, setEmailValid] = useState(true);
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('ELEVE');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Validation dynamique des critères du mot de passe
+  const conditionLength = password.length >= 8;
+  const conditionUpper = /[A-Z]/.test(password);
+  const conditionLower = /[a-z]/.test(password);
+  const conditionDigit = /\d/.test(password);
+  const conditionSpecial = /[@$!%*?&]/.test(password);
 
   // Validation d'un email simple
   const validateEmail = (email) => {
@@ -23,13 +31,14 @@ const RegisterPage = () => {
     return regex.test(email);
   };
 
-  // Critères de sécurité moderne pour le mot de passe :
-  // - Minimum 8 caractères, au moins une majuscule, une minuscule, un chiffre et un caractère spécial.
-  const validatePassword = (password) => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
+  // Mise à jour en temps réel de l'email avec validation
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailValid(validateEmail(value));
   };
 
+  // Fonction de soumission du formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -39,8 +48,8 @@ const RegisterPage = () => {
       return;
     }
 
-    if (!validatePassword(password)) {
-      setErrorMessage("Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.");
+    if (!conditionLength || !conditionUpper || !conditionLower || !conditionDigit || !conditionSpecial) {
+      setErrorMessage("Le mot de passe ne respecte pas tous les critères.");
       return;
     }
 
@@ -49,18 +58,14 @@ const RegisterPage = () => {
       return;
     }
 
-    // Pour la sécurité, ne pas logger ces données
-    // Transmission sécurisée des données via HTTPS (assurez-vous que votre backend est configuré en HTTPS)
     try {
-      // Simulation d'appel API pour créer l'utilisateur.
-      // Remplacez cet appel par votre requête réelle vers votre backend.
+      // Appel API simulé pour créer l'utilisateur (remplacez par votre appel réel)
       await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nom, prenom, email, password, role }),
       });
-
-      // On se connecte directement après l'inscription.
+      // Connexion automatique après inscription
       login(role);
       navigate('/esignpro');
     } catch (error) {
@@ -104,9 +109,14 @@ const RegisterPage = () => {
             type="email"
             placeholder="Votre e-mail"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             required
           />
+          {email && (
+            <small style={{ color: emailValid ? 'green' : 'red' }}>
+              {emailValid ? 'Adresse e-mail valide' : 'Adresse e-mail invalide'}
+            </small>
+          )}
         </div>
 
         <div className="form-group">
@@ -127,9 +137,24 @@ const RegisterPage = () => {
               {showPassword ? "Cacher" : "Afficher"}
             </button>
           </div>
-          <small>
-            Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.
-          </small>
+          <small>Votre mot de passe doit respecter les conditions suivantes</small>
+          <ul className="password-criteria">
+            <li className={conditionLength ? "valid" : ""}>
+              {conditionLength ? "✓" : "✗"} Au moins 8 caractères
+            </li>
+            <li className={conditionUpper ? "valid" : ""}>
+              {conditionUpper ? "✓" : "✗"} Au moins une majuscule
+            </li>
+            <li className={conditionLower ? "valid" : ""}>
+              {conditionLower ? "✓" : "✗"} Au moins une minuscule
+            </li>
+            <li className={conditionDigit ? "valid" : ""}>
+              {conditionDigit ? "✓" : "✗"} Au moins un chiffre
+            </li>
+            <li className={conditionSpecial ? "valid" : ""}>
+              {conditionSpecial ? "✓" : "✗"} Au moins un caractère spécial (@$!%*?&)
+            </li>
+          </ul>
         </div>
 
         <div className="form-group">
