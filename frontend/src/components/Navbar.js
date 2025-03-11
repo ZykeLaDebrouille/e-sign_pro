@@ -17,18 +17,20 @@ const Navbar = () => {
           />
         </Link>
         <ul style={styles.navList}>
-          <li><Link to="/">Accueil</Link></li>
-          <li><Link to="/contact">Contact</Link></li>
-          <li><Link to="/about">À propos</Link></li>
-          <li><Link to="/esignpro">ESignPro</Link></li>
-          {isAuthenticated && <li><Link to="/profile">Profil</Link></li>}
+          <li><Link to="/" style={styles.navLink}>Accueil</Link></li>
+          <li><Link to="/contact" style={styles.navLink}>Contact</Link></li>
+          <li><Link to="/about" style={styles.navLink}>À propos</Link></li>
+          <li><Link to="/esignpro" style={styles.navLink}>ESignPro</Link></li>
         </ul>
       </div>
       <div style={styles.rightContainer}>
+        {isAuthenticated && (
+          <Link to="/profile" style={styles.navLink}>Profil</Link>
+        )}
         {isAuthenticated ? (
-          <button onClick={logout} style={styles.btn}>Se déconnecter</button>
+          <button onClick={logout} style={styles.navLink}>Se déconnecter</button>
         ) : (
-          <Link to="/login" style={styles.btn}>Connexion</Link>
+          <Link to="/login" style={styles.navLink}>Connexion</Link>
         )}
       </div>
     </nav>
@@ -59,8 +61,12 @@ const styles = {
     margin: 0,
     padding: 0,
   },
-  rightContainer: {},
-  btn: {
+  rightContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  },
+  navLink: {
     backgroundColor: '#007aff',
     color: '#fff',
     padding: '0.5rem 1rem',
@@ -69,6 +75,7 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     fontWeight: 'bold',
+    display: 'inline-block',
   },
 };
 

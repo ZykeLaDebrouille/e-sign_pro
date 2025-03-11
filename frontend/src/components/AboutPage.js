@@ -11,7 +11,7 @@ const AboutPage = () => {
       </p>
       <h2>Notre équipe</h2>
       <p>
-        Le projet a été développé par Salomon et son équipe, qui partagent la volonté de créer des outils numériques de qualité.
+        Le projet a été développé par Salomon et Enes, qui partagent la volonté de créer des outils numériques de qualité.
       </p>
     </div>
   );

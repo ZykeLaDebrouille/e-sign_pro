@@ -136,7 +136,7 @@ const RegisterPage = () => {
               {showPassword ? "Cacher" : "Afficher"}
             </button>
           </div>
-          <small>Votre mot de passe doit respecter les conditions suivantes :</small>
+          <small>Votre mot de passe doit respecter les conditions suivantes</small>
           <ul className="password-criteria">
             <li className={conditionLength ? "valid" : ""}>
               {conditionLength ? "✓" : "✗"} Au moins 8 caractères
@@ -161,6 +161,7 @@ const RegisterPage = () => {
           <select value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="ELEVE">Élève</option>
             <option value="PROFESSEUR">Professeur</option>
+            <option value="ENTREPRISE">Entreprise</option>
             <option value="ENTREPRISE">Entreprise</option>
           </select>
         </div>

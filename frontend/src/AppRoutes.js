@@ -10,14 +10,13 @@ import LoginPage from './components/Auth/LoginPage';
 import RegisterPage from './components/Auth/RegisterPage';
 import ProfilePage from './components/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
+import Footer from './components/Footer';
 import './index.css';
 
 const AppRoutes = () => {
-  // Vous pouvez ici choisir une image fixe ou une image aléatoire
   const [bgImage, setBgImage] = useState('');
 
   useEffect(() => {
-    // Ici, on définit le fond d'écran à partir du dossier public
     setBgImage(process.env.PUBLIC_URL + '/images/background.jpg');
   }, []);
 
@@ -35,36 +34,33 @@ const AppRoutes = () => {
     >
       <Router>
         <Navbar />
-        <Routes>
-          {/* Pages publiques */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/about" element={<AboutPage />} />
-
-          {/* Pages Auth */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-
-          {/* Pages protégées */}
-          <Route
-            path="/esignpro"
-            element={
-              <ProtectedRoute>
-                <ESignProPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <div style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/esignpro"
+              element={
+                <ProtectedRoute>
+                  <ESignProPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+        <Footer />
       </Router>
     </div>
   );
