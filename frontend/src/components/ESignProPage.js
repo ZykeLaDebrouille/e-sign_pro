@@ -1,168 +1,257 @@
-// src/components/ESignProPage.jsx
-import React, { useState, useEffect, useContext, useRef } from 'react';
-import SignatureCanvas from 'react-signature-canvas';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+// frontend/src/components/ESignProPage.js
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { conventionApi } from '../services/api/conventionApi';
+import { documentApi } from '../services/api/documentApi';
+import { useAuth } from '../context/AuthContext';
+import Loader from './Loader';
 
 const ESignProPage = () => {
-  const { userRole } = useContext(AuthContext);
-  const sigCanvas = useRef(null);
+  const [conventions, setConventions] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { currentUser, hasRole, ROLES } = useAuth();
 
-  // Workflow : 0 = Upload PDF, 1 = Signature Élève, 5 = Génération du PDF final
-  const [currentStep, setCurrentStep] = useState(0);
-  const [uploadMessage, setUploadMessage] = useState('');
-  const [signatureMessage, setSignatureMessage] = useState('');
-  const [pdfMessage, setPdfMessage] = useState('');
-  const [notification, setNotification] = useState('');
-  const [signatureData, setSignatureData] = useState('');
-
+  // Récupérer les conventions et documents
   useEffect(() => {
-    // Initialisation du workflow par l'upload
-    setCurrentStep(0);
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Récupérer les conventions
+        const convResponse = await conventionApi.getAllConventions();
+        setConventions(convResponse.data.data);
+        
+        // Récupérer les documents
+        const docResponse = await documentApi.getAllDocuments();
+        setDocuments(docResponse.data.data);
+      } catch (err) {
+        console.error('Erreur lors du chargement des données:', err);
+        setError('Impossible de charger les données');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Gestion de l'upload du PDF
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || file.type !== 'application/pdf') {
-      alert("Veuillez sélectionner un fichier PDF.");
-      return;
+    if (currentUser) {
+      fetchData();
     }
+  }, [currentUser]);
+
+  // Fonction pour afficher une section spécifique selon le rôle
+  const renderRoleSpecificSection = () => {
+    if (hasRole(ROLES.PROFESSEUR)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Gestion des conventions</h3>
+          <div className="action-buttons">
+            <Link to="/conventions/create" className="create-button">
+              Créer une nouvelle convention
+            </Link>
+            <Link to="/students" className="view-button">
+              Voir la liste des élèves
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+    if (hasRole(ROLES.ELEVE)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Mes stages</h3>
+          <div className="action-buttons">
+            <Link to="/conventions/create" className="create-button">
+              Demander une convention de stage
+            </Link>
+            {/* Afficher les conventions de l'élève avec option de génération de PDF */}
+            {conventions.length > 0 && (
+              <div className="student-conventions">
+                <h4>Mes conventions</h4>
+                <ul className="conventions-list">
+                  {conventions.map(conv => (
+                    <li key={conv.id}>
+                      <span>{conv.sujet_stage} - {conv.status}</span>
+                      <button 
+                        onClick={() => generateConventionPDF(conv.id)}
+                        className="action-button"
+                      >
+                        Télécharger PDF
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    if (hasRole(ROLES.PARENT)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Documents de mon enfant</h3>
+          <div className="action-buttons">
+            <Link to="/student-documents" className="view-button">
+              Voir les conventions à signer
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+    if (hasRole(ROLES.ENTREPRISE)) {
+      return (
+        <div className="dashboard-section">
+          <h3>Gestion des stagiaires</h3>
+          <div className="action-buttons">
+            <Link to="/conventions/create" className="create-button">
+              Proposer un stage
+            </Link>
+            <Link to="/internships" className="view-button">
+              Gérer les stages en cours
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
+  // Générer un PDF de convention
+  const generateConventionPDF = async (conventionId) => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('userId', 1); // Remplacer par l'ID réel
-      const response = await axios.post('/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setUploadMessage("Fichier uploadé avec succès.");
-      setNotification("La convention a été uploadée. Passez à la signature.");
-      setCurrentStep(1); // Passer à la signature de l'élève
-    } catch (error) {
-      setUploadMessage("Erreur lors de l'upload du fichier.");
+      setLoading(true);
+      
+      // Récupérer les données de la convention
+      const response = await conventionApi.getConvention(conventionId);
+      const conventionData = response.data.data;
+      
+      // Générer le PDF
+      const pdfResponse = await conventionApi.generatePDF(conventionData);
+      
+      // Créer un blob et télécharger le fichier
+      const blob = new Blob([pdfResponse.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.href = url;
+      link.setAttribute('download', `convention_${conventionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Erreur lors de la génération du PDF:', err);
+      setError('Impossible de générer le PDF');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Gestion de la sauvegarde de la signature (pour l'étape Élève)
-  const handleSaveSignature = async () => {
-    if (sigCanvas.current && sigCanvas.current.isEmpty()) {
-      alert("Veuillez apposer votre signature avant de sauvegarder.");
-      return;
-    }
-    const dataUrl = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-    setSignatureData(dataUrl);
-    try {
-      await axios.post('/api/sign', {
-        conventionId: 1, // Exemple, à remplacer par l'ID réel
-        signature: dataUrl,
-        role: 'ELEVE',
-      });
-      setSignatureMessage("Signature enregistrée avec succès.");
-      setNotification("Signature enregistrée. Vous pouvez maintenant générer le PDF final.");
-      setCurrentStep(5);
-    } catch (error) {
-      setSignatureMessage("Erreur lors de l'enregistrement de la signature.");
-    }
-  };
+  // Déterminer si nous devons afficher la section générale des conventions
+  // Pour éviter la duplication pour les élèves
+  const shouldShowGeneralConventionsSection = !hasRole(ROLES.ELEVE);
 
-  // Gestion de la génération du PDF final
-  const handleGeneratePDF = async () => {
-    try {
-      await axios.post('/api/generate-pdf', { conventionId: 1 });
-      setPdfMessage("PDF généré avec succès et archivé.");
-      setNotification("Processus terminé. Vérifiez vos emails pour le document final.");
-    } catch (error) {
-      setPdfMessage("Erreur lors de la génération du PDF.");
-    }
-  };
+  if (loading) return <Loader />;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div style={styles.container}>
-      <h1>ESign Pro - Signature Électronique</h1>
-      <p>Bienvenue sur la plateforme de signature électronique.</p>
+    <div className="esign-pro-page">
+      <h2>Tableau de bord E-Sign Pro</h2>
+      
+      {/* Afficher le nom et le rôle de l'utilisateur */}
+      <div className="user-info">
+        <p>Connecté en tant que : {currentUser?.firstname} {currentUser?.lastname}</p>
+        <p>Rôle : {currentUser?.role}</p>
+      </div>
 
-      {/* Étape 0 : Upload du PDF */}
-      {currentStep === 0 && (
-        <section style={styles.section}>
-          <h2>Étape 1 : Upload de la Convention (PDF)</h2>
-          <input type="file" accept="application/pdf" onChange={handleUpload} />
-          <p>{uploadMessage}</p>
-        </section>
-      )}
+      {/* Section spécifique au rôle */}
+      {renderRoleSpecificSection()}
 
-      {/* Étape 1 : Signature de l'Élève */}
-      {currentStep === 1 && (
-        <section style={styles.section}>
-          <h2>Étape 2 : Signature de l'Élève</h2>
-          <p>Veuillez apposer votre signature dans l'espace ci-dessous :</p>
-          <div style={styles.signatureContainer}>
-            <SignatureCanvas
-              ref={sigCanvas}
-              penColor="black"
-              canvasProps={{ width: 500, height: 200, className: 'sigCanvas' }}
-            />
-          </div>
-          <button onClick={handleSaveSignature} style={styles.btn}>
-            Sauvegarder la signature
-          </button>
-          <p>{signatureMessage}</p>
-        </section>
-      )}
-
-      {/* Étape 5 : Génération du PDF final */}
-      {currentStep === 5 && (
-        <section style={styles.section}>
-          <h2>Étape 3 : Génération du Document Final</h2>
-          <button onClick={handleGeneratePDF} style={styles.btn}>
-            Générer le PDF final
-          </button>
-          <p>{pdfMessage}</p>
-        </section>
-      )}
-
-      {/* Affichage des notifications */}
-      {notification && (
-        <div style={styles.notification}>
-          <p>{notification}</p>
+      {/* Section des conventions - affichée pour tous sauf les élèves (qui ont déjà leur propre section) */}
+      {shouldShowGeneralConventionsSection && (
+        <div className="dashboard-section">
+          <h3>Mes conventions</h3>
+          {conventions.length === 0 ? (
+            <p>Aucune convention trouvée</p>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sujet</th>
+                  <th>Période</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {conventions.map(conv => (
+                  <tr key={conv.id}>
+                    <td>{conv.id}</td>
+                    <td>{conv.sujet_stage}</td>
+                    <td>{conv.date_debut} au {conv.date_fin}</td>
+                    <td>{conv.status}</td>
+                    <td>
+                      <button 
+                        onClick={() => generateConventionPDF(conv.id)}
+                        className="action-button"
+                      >
+                        Télécharger PDF
+                      </button>
+                      <Link to={`/conventions/${conv.id}`} className="action-link">
+                        Voir détails
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
+      
+      <div className="dashboard-section">
+        <h3>Documents à signer</h3>
+        {documents.length === 0 ? (
+          <p>Aucun document à signer</p>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Date de création</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {documents.map(doc => (
+                <tr key={doc.id}>
+                  <td>{doc.title}</td>
+                  <td>{new Date(doc.created_at).toLocaleDateString()}</td>
+                  <td>{doc.status}</td>
+                  <td>
+                    <Link to={`/documents/${doc.id}/sign`} className="action-link">
+                      Signer
+                    </Link>
+                    <Link to={`/documents/${doc.id}/signatories`} className="action-link">
+                      Signataires
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    padding: '2rem',
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: '8px',
-    margin: '2rem auto',
-    maxWidth: '900px',
-    textAlign: 'center',
-  },
-  section: {
-    marginBottom: '2rem',
-  },
-  signatureContainer: {
-    border: '2px solid #000',
-    margin: '1rem auto',
-    width: 'fit-content',
-  },
-  btn: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#007aff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  },
-  notification: {
-    marginTop: '1rem',
-    padding: '0.5rem 1rem',
-    backgroundColor: '#d4edda',
-    color: '#155724',
-    borderRadius: '4px',
-    border: '1px solid #c3e6cb',
-  },
 };
 
 export default ESignProPage;

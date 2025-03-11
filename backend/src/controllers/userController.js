@@ -6,7 +6,8 @@ class UserController {
   // Inscription d'un nouvel utilisateur
   async register(req, res, next) {
     try {
-      const { email, password, firstname, lastname } = req.body;
+      console.log('Données reçues pour l\'inscription:', req.body);
+      const { email, password, firstname, lastname, role, companyName } = req.body;
 
       // Validation des données
       if (!email || !password) {
@@ -23,32 +24,40 @@ class UserController {
         throw new ApiError(400, 'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre');
       }
 
-      // Créer l'utilisateur
-      const user = await User.create({
-        email,
-        password,
-        firstname,
-        lastname
-      });
+  // Créer l'utilisateur
+  const userData = {
+    email,
+    password,
+    firstname,
+    lastname,
+    role: role || 'ELEVE' // Valeur par défaut
+  };
 
-      // Générer les tokens
-      const accessToken = User.generateAccessToken(user);
-      const refreshToken = User.generateRefreshToken(user);
+  console.log('Création d\'utilisateur avec les données:', userData);
+  const user = await User.create(userData);
 
-      // Définir les cookies
-      this.setTokenCookies(res, accessToken, refreshToken);
+  // Générer les tokens
+  const accessToken = User.generateAccessToken(user);
+  const refreshToken = User.generateRefreshToken(user);
 
-      res.status(201).json({
-        status: 'success',
-        data: {
-          user: user.toJSON(),
-          accessToken
-        }
-      });
-    } catch (error) {
-      next(error);
+  // Définir les cookies
+  this.setTokenCookies(res, accessToken, refreshToken);
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      user: user.toJSON(),
+      accessToken
     }
+  });
+  console.log('Utilisateur créé avec succès:', user);
+  console.log('Token généré:', hiddenToken(accessToken));
+  } catch (error) {
+  console.error('Erreur lors de l\'inscription:', error);
+  next(error);
   }
+}
+
 
   // Connexion utilisateur
   async login(req, res, next) {
@@ -76,6 +85,28 @@ class UserController {
       next(error);
     }
   }
+
+  async checkAuth(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        throw new ApiError(404, 'Utilisateur non trouvé');
+      }
+  
+      res.status(200).json({
+        status: 'success',
+        data: {
+          authenticated: true,
+          user: user.toJSON()
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
 
   // Déconnexion
   async logout(req, res, next) {
@@ -159,7 +190,7 @@ class UserController {
 
       // Valider le nouveau mot de passe
       if (!validatePassword(newPassword)) {
-        throw new ApiError(400, 'Le nouveau mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre');
+        throw new ApiError(400, 'Le nouveau mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre');
       }
 
       const user = await User.findById(userId);

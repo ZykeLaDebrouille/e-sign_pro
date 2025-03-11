@@ -1,7 +1,8 @@
-// src/middleware/auth.js
+// backend/src/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/User');
+const { hasPermission } = require('../config/roles');
 
 const auth = async (req, res, next) => {
   try {
@@ -38,11 +39,30 @@ const auth = async (req, res, next) => {
 
 const checkRole = (roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié' });
     }
+    
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Accès refusé: rôle non autorisé' });
+    }
+    
     next();
   };
 };
 
-module.exports = { auth, checkRole };
+const checkPermission = (permission) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
+    
+    if (!hasPermission(req.user.role, permission)) {
+      return res.status(403).json({ message: 'Accès refusé: permission non accordée' });
+    }
+    
+    next();
+  };
+};
+
+module.exports = { auth, checkRole, checkPermission };

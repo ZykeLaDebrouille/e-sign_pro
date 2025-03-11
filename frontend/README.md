@@ -31,7 +31,7 @@ E-Sign PRO est une application dédiée à la digitalisation des conventions de 
 ### Backend :
 - **Node.js** avec **Express** : Serveur backend.
 - **PDFKit** : Librairie pour la gestion des documents PDF.
-- **SQLite** / **MongoDB** : Base de données pour le stockage des informations liées aux utilisateurs, documents et signatures.
+- **SQLite** : Base de données pour le stockage des informations liées aux utilisateurs, documents et signatures.
 - **Node-SignPDF** : Intégration des signatures dans les fichiers PDF.
 - **Crypto (SHA-256)** : Hashage des signatures pour une sécurité renforcée.
 
@@ -60,9 +60,10 @@ E-Sign PRO est une application dédiée à la digitalisation des conventions de 
 ### Prérequis
 - **Node.js** (v16+ recommandé).
 - **Docker** (optionnel pour la conteneurisation).
-- **SQLite/MongoDB** configuré pour le backend.
+- **SQLite/ configuré pour le backend.
 
 ### Étapes d'installation
+
 1. Clonez le dépôt GitHub :
    ```bash
    git clone https://github.com/M02laleague/e-sign-pro.git

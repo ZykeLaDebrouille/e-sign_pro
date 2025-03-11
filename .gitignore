@@ -3,3 +3,5 @@ backend/node_modules/
 node_modules/
 .env
 backend/generated_pdfs/
+projet-e-sign_pro.txt
+backend/test-convention.pdf

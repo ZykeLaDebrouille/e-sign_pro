@@ -1,20 +1,21 @@
+# Image de base Node.js 18 Alpine (légère)
 FROM node:18.16.0-alpine
 
-# Créer le dossier de l'application
+# Définition du répertoire de travail dans le conteneur
 WORKDIR /usr/src/app
 
-# Copier les fichiers de l'application
+# Copie uniquement des fichiers de dépendances pour optimiser le cache Docker
 COPY package*.json ./
 
-# Installer les dépendances npm ci au lieu de npm install assure une installation plus cohérente des dépendances.
+# Installation des dépendances en mode production
+# npm install est utilisé car plus flexible que npm ci quand il n'y a pas de package-lock.json
 RUN npm install --production
 
-# Copier le reste du code source
+# Copie du reste des fichiers source de l'application
 COPY . .
 
-# Exposer le port
+# Définition du port exposé par le conteneur
 EXPOSE 5050
 
-
-# Démarrer le serveur
+# Commande de démarrage du serveur
 CMD ["node", "src/server.js"]

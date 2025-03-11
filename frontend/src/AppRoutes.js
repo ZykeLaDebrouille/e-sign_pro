@@ -1,6 +1,8 @@
 // src/AppRoutes.jsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import ContactPage from './components/ContactPage';
@@ -9,11 +11,13 @@ import ESignProPage from './components/ESignProPage';
 import LoginPage from './components/Auth/LoginPage';
 import RegisterPage from './components/Auth/RegisterPage';
 import ProfilePage from './components/ProfilePage';
+import UnauthorizedPage from './components/UnauthorizedPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import './index.css';
 
 const AppRoutes = () => {
+  const { ROLES } = useAuth();
   const [bgImage, setBgImage] = useState('');
 
   useEffect(() => {
@@ -41,6 +45,7 @@ const AppRoutes = () => {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route
               path="/esignpro"
               element={

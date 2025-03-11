@@ -1,58 +1,85 @@
-// src/components/Auth/LoginPage.jsx
-import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+// frontend/src/components/Auth/LoginPage.js
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API from '../../services/api';
 import './AuthStyles.css';
 
 const LoginPage = () => {
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Exemple simplifié : remplacez par un appel API pour authentifier l'utilisateur
-    if (email === 'test@exemple.com' && password === '1234') {
-      login('ELEVE'); // Par exemple, on définit le rôle ici
-      navigate('/esignpro');
-    } else {
-      setErrorMessage('Identifiants incorrects.');
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Appel à l'API de login
+      const response = await API.post('/users/login', { email, password });
+      
+      // Stocke le token d'authentification
+      localStorage.setItem('token', response.data.data.accessToken);
+      
+      // Stocke les infos utilisateur
+      localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      
+      // Redirection vers la page d'accueil après connexion
+      navigate('/');
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      setError(
+        error.response?.data?.message || 
+        'Impossible de se connecter. Vérifiez vos identifiants.'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="auth-container">
-      <h2>Connexion</h2>
-      <form onSubmit={handleSubmit} className="auth-form">
-        <div className="form-group">
-          <label>Adresse e-mail</label>
-          <input
-            type="email"
-            placeholder="Votre e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Mot de passe</label>
-          <input
-            type="password"
-            placeholder="Votre mot de passe"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        <button type="submit" className="btn-primary">Se connecter</button>
-      </form>
-      <p className="switch-link">
-        ou bien, <Link to="/register">créer un compte</Link>
-      </p>
+      <div className="auth-form-container">
+        <h2>Connexion</h2>
+        {error && <div className="auth-error">{error}</div>}
+        
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="auth-button"
+            disabled={loading}
+          >
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+        </form>
+        
+        <p>
+          Vous n'avez pas de compte ?{' '}
+          <a href="/register">S'inscrire</a>
+        </p>
+      </div>
     </div>
   );
 };
