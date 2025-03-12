@@ -29,7 +29,7 @@ class UserController {
     password,
     firstname,
     lastname,
-    role: role || 'ELEVE' // Valeur par défaut
+    role: role || 'ELEVE'
   };
 
   console.log('Création d\'utilisateur avec les données:', userData);
