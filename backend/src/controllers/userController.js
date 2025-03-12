@@ -6,7 +6,6 @@ class UserController {
   // Inscription d'un nouvel utilisateur
   async register(req, res, next) {
     try {
-      console.log('Données reçues pour l\'inscription:', req.body);
       const { email, password, firstname, lastname, role, companyName } = req.body;
 
       // Validation des données
