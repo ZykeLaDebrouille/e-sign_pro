@@ -45,14 +45,6 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Connexion à la base de données
-database.connect()
-  .then(() => console.log('Base de données connectée'))
-  .catch(err => {
-    console.error('Erreur de connexion à la base de données:', err);
-    process.exit(1);
-  });
-
 // Montage des routes sous le préfixe /api
 app.use('/api', routes);
 

@@ -1,23 +1,20 @@
-/**
- * Module de gestion de la connexion à la base de données SQLite
- * Fournit une interface unifiée pour les opérations de base de données
- */
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 class Database {
   constructor() {
-    this.db = null; // Instance de connexion SQLite
+    this.db = null;
+    this.isConnected = false;
   }
 
-  /**
-   * Établit la connexion à la base de données
-   * @returns {Promise<Object>} Instance de la base de données connectée
-   */
   connect() {
+    // Si déjà connecté, renvoyer la connexion existante
+    if (this.isConnected && this.db) {
+      return Promise.resolve(this.db);
+    }
+
     return new Promise((resolve, reject) => {
       try {
-        // Chemin absolu vers le fichier SQLite
         const dbPath = path.resolve(__dirname, '../../database/esign.sqlite');
         
         this.db = new sqlite3.Database(dbPath, (err) => {
@@ -26,12 +23,41 @@ class Database {
             reject(err);
           } else {
             console.log('Connecté à la base de données SQLite');
-            this.initializeTables(); // Initialise les tables si nécessaire
+            this.isConnected = true;
+            this.initializeTables();
             resolve(this.db);
           }
         });
+
+        // Gestion propre de la fermeture 
+        process.on('SIGINT', () => {
+          this.close().then(() => {
+            console.log('Connexion à la base de données fermée proprement');
+            process.exit(0);
+          });
+        });
       } catch (error) {
         reject(error);
+      }
+    });
+  }
+
+  // Ajouter une méthode pour fermer proprement la connexion
+  close() {
+    return new Promise((resolve, reject) => {
+      if (this.db) {
+        this.db.close((err) => {
+          if (err) {
+            console.error('Erreur lors de la fermeture de la base de données:', err);
+            reject(err);
+          } else {
+            this.isConnected = false;
+            this.db = null;
+            resolve();
+          }
+        });
+      } else {
+        resolve();
       }
     });
   }
@@ -171,7 +197,35 @@ class Database {
       });
     });
   }
+
+  beginTransaction() {
+    return new Promise((resolve, reject) => {
+      this.db.run('BEGIN TRANSACTION', (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
+  
+  commit() {
+    return new Promise((resolve, reject) => {
+      this.db.run('COMMIT', (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
+  
+  rollback() {
+    return new Promise((resolve, reject) => {
+      this.db.run('ROLLBACK', (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  }
 }
+
 
 // Export d'une instance unique (pattern Singleton)
 const database = new Database();
