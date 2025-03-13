@@ -16,20 +16,35 @@ const database = require('./config/database');
 
 const PORT = process.env.PORT || 5050;
 
-/**
- * Fonction asynchrone pour démarrer le serveur
- * - Connecte d'abord la base de données
- * - Puis démarre le serveur HTTP
- */
+
+
+process.on('uncaughtException', (err) => {
+  console.error('ERREUR NON GÉRÉE:', err);
+  // Ne pas quitter immédiatement pour permettre l'écriture des logs
+  setTimeout(() => process.exit(1), 1000);
+});
+
 async function startServer() {
   try {
-    await database.connect();
+    console.log('Tentative de connexion à la base de données...');
+    const db = await database.connect();
+    console.log('Connexion à la base de données réussie');
+    
+    // Initialiser les tables restantes après le démarrage du serveur
+    setTimeout(async () => {
+      try {
+        await database.initializeRemainingTables();
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation complète des tables:', error);
+      }
+    }, 2000);
+    
     app.listen(PORT, () => {
       console.log(`Serveur démarré sur le port ${PORT}`);
     });
   } catch (error) {
-    console.error('Erreur au démarrage du serveur:', error);
-    process.exit(1); // Arrêt du processus en cas d'erreur critique
+    console.error('Erreur fatale au démarrage du serveur:', error);
+    process.exit(1);
   }
 }
 

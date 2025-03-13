@@ -1,82 +1,103 @@
-// src/components/Navbar.jsx
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Vérifier l'authentification
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      
+      if (token && userStr) {
+        setIsAuthenticated(true);
+        try {
+          setUser(JSON.parse(userStr));
+        } catch (e) {
+          console.error('Erreur parsing user:', e);
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    };
+
+    checkAuth();
+    // Vérifier à chaque changement de route
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, [location.pathname]);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
   return (
-    <nav style={styles.navbar}>
-      <div style={styles.leftContainer}>
-        <Link to="/">
-          <img
-            src={process.env.PUBLIC_URL + '/images/logo.png'}
-            alt="Logo E-Sign Pro"
-            style={styles.logo}
-          />
+    <nav className="navbar">
+      <div className="navbar-container">
+        <Link to="/" className="navbar-logo">
+          E-Sign Pro
         </Link>
-        <ul style={styles.navList}>
-          <li><Link to="/" style={styles.navLink}>Accueil</Link></li>
-          <li><Link to="/contact" style={styles.navLink}>Contact</Link></li>
-          <li><Link to="/about" style={styles.navLink}>À propos</Link></li>
-          <li><Link to="/esignpro" style={styles.navLink}>ESignPro</Link></li>
+
+        <div className="menu-icon" onClick={toggleMobileMenu}>
+          <i className={mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'} />
+        </div>
+
+        <ul className={mobileMenuOpen ? 'nav-menu active' : 'nav-menu'}>
+          <li className="nav-item">
+            <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+              Accueil
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/about" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+              À propos
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link to="/contact" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+              Contact
+            </Link>
+          </li>
+          
+          {isAuthenticated ? (
+            <>
+              <li className="nav-item">
+                <Link to="/esignpro" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  Mon espace
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/profile" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  Mon profil
+                </Link>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="nav-item">
+                <Link to="/login" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  Connexion
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/register" className="nav-link button" onClick={() => setMobileMenuOpen(false)}>
+                  S'inscrire
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
-      </div>
-      <div style={styles.rightContainer}>
-        {isAuthenticated && (
-          <Link to="/profile" style={styles.navLink}>Profil</Link>
-        )}
-        {isAuthenticated ? (
-          <button onClick={logout} style={styles.navLink}>Se déconnecter</button>
-        ) : (
-          <Link to="/login" style={styles.navLink}>Connexion</Link>
-        )}
       </div>
     </nav>
   );
-};
-
-const styles = {
-  navbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '1rem',
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderBottom: '1px solid #ccc',
-  },
-  leftContainer: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  logo: {
-    height: '50px',
-    marginRight: '1rem',
-  },
-  navList: {
-    listStyle: 'none',
-    display: 'flex',
-    gap: '1rem',
-    margin: 0,
-    padding: 0,
-  },
-  rightContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-  },
-  navLink: {
-    backgroundColor: '#007aff',
-    color: '#fff',
-    padding: '0.5rem 1rem',
-    textDecoration: 'none',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    display: 'inline-block',
-  },
 };
 
 export default Navbar;

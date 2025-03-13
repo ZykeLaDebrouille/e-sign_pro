@@ -13,6 +13,15 @@ services:
       - NODE_ENV=development
     networks:
       - app-network
+    # Initialisation des répertoires au démarrage du conteneur
+    command: >
+      bash -c "
+        mkdir -p /usr/src/app/database /usr/src/app/pdfs &&
+        chmod -R 777 /usr/src/app/database /usr/src/app/pdfs &&
+        touch /usr/src/app/database/esign.sqlite &&
+        chmod 777 /usr/src/app/database/esign.sqlite &&
+        node src/server.js
+      "
 
 
   frontend:

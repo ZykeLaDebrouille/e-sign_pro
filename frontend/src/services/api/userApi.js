@@ -1,9 +1,7 @@
-// frontend/src/services/api/userApi.js
 import API from '../api';
 
-export const userApi = {
+const userApi = {
   register: (userData) => {
-    console.log('Envoi des données d\'inscription:', userData);
     return API.post('/users/register', userData);
   },
   
@@ -25,6 +23,10 @@ export const userApi = {
   
   checkAuth: () => {
     return API.get('/users/check-auth');
+  },
+  
+  changePassword: (passwordData) => {
+    return API.post('/users/change-password', passwordData);
   }
 };
 

@@ -1,23 +1,30 @@
-# Image de base Node.js 18 Alpine (légère)
-FROM node:18.16.0-alpine
+# Utiliser l'image Node.js complète plutôt qu'Alpine
+FROM node:18.16.0
 
-# Définition du répertoire de travail dans le conteneur
 WORKDIR /usr/src/app
 
-# Copie uniquement des fichiers de dépendances pour optimiser le cache Docker
+# Installer des dépendances requises pour SQLite
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier et installer les dépendances
 COPY package*.json ./
+RUN npm install
+RUN npm rebuild sqlite3 --build-from-source
 
-# Installation des dépendances
-RUN npm install 
-
-# Copie du reste des fichiers source de l'application
+# Copier le reste des fichiers
 COPY . .
 
-# Création d'un répertoire pour la base de données et des PDFs avec permissions étendues
-RUN mkdir -p database && chmod -R 777 database && mkdir -p pdfs && chmod -R 777 pdfs
+# Préparation des répertoires avec permissions complètes
+RUN mkdir -p /usr/src/app/database /usr/src/app/pdfs \
+    && chmod -R 777 /usr/src/app/database /usr/src/app/pdfs \
+    && touch /usr/src/app/database/esign.sqlite \
+    && chmod 777 /usr/src/app/database/esign.sqlite
 
-# Définition du port exposé par le conteneur
 EXPOSE 5050
 
-# Commande de démarrage du serveur
-CMD ["node", "src/server.js"]
+# Utiliser ces arguments pour activer le débogage
+CMD ["node", "--trace-warnings", "--unhandled-rejections=strict", "src/server.js"]
