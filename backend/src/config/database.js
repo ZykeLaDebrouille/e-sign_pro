@@ -1,5 +1,7 @@
+// backend/src/config/database.js
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 class Database {
   constructor() {
@@ -15,17 +17,43 @@ class Database {
 
     return new Promise((resolve, reject) => {
       try {
-        const dbPath = path.resolve(__dirname, '../../database/esign.sqlite');
+        // Assurer que le répertoire de la base de données existe
+        const dbDir = path.resolve(__dirname, '../../database');
+        const dbPath = path.join(dbDir, 'esign.sqlite');
         
-        this.db = new sqlite3.Database(dbPath, (err) => {
+        if (!fs.existsSync(dbDir)) {
+          fs.mkdirSync(dbDir, { recursive: true });
+          console.log(`Répertoire de base de données créé: ${dbDir}`);
+        }
+        
+        // Vérifier les permissions du répertoire
+        try {
+          fs.accessSync(dbDir, fs.constants.W_OK);
+          console.log(`Le répertoire ${dbDir} est accessible en écriture`);
+        } catch (err) {
+          console.error(`Problème de permissions sur le répertoire: ${dbDir}`);
+          try {
+            fs.chmodSync(dbDir, 0o777);
+            console.log(`Permissions modifiées pour: ${dbDir}`);
+          } catch (chmodErr) {
+            console.error(`Impossible de modifier les permissions du répertoire: ${chmodErr.message}`);
+          }
+        }
+        
+        // Ouvrir la connexion à la base de données
+        this.db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
           if (err) {
             console.error('Erreur de connexion à la base de données:', err.message);
             reject(err);
           } else {
             console.log('Connecté à la base de données SQLite');
             this.isConnected = true;
-            this.initializeTables();
-            resolve(this.db);
+            this.initializeTables()
+              .then(() => resolve(this.db))
+              .catch((initError) => {
+                console.error('Erreur lors de l\'initialisation des tables:', initError);
+                reject(initError);
+              });
           }
         });
 
@@ -37,12 +65,13 @@ class Database {
           });
         });
       } catch (error) {
+        console.error('Erreur lors de la création de la connexion:', error);
         reject(error);
       }
     });
   }
 
-  // Ajouter une méthode pour fermer proprement la connexion
+  // Méthode pour fermer proprement la connexion
   close() {
     return new Promise((resolve, reject) => {
       if (this.db) {
@@ -64,9 +93,8 @@ class Database {
 
   /**
    * Crée les tables si elles n'existent pas déjà
-   * Assure la structure minimale nécessaire au fonctionnement
    */
-  initializeTables() {
+  async initializeTables() {
     const queries = [
       `CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -132,21 +160,19 @@ class Database {
       )`
     ];
   
-    queries.forEach(query => {
-      this.db.run(query, (err) => {
-        if (err) {
-          console.error('Erreur lors de la création des tables:', err.message);
-        }
-      });
-    });
+    // Exécuter chaque requête de création de table
+    for (const query of queries) {
+      try {
+        await this.run(query);
+      } catch (error) {
+        console.error(`Erreur lors de la création de table: ${error.message}`);
+        throw error;
+      }
+    }
+    
+    console.log('Toutes les tables ont été initialisées avec succès');
   }
 
-  /**
-   * Exécute une requête renvoyant plusieurs lignes
-   * @param {string} sql - Requête SQL
-   * @param {Array} params - Paramètres pour la requête préparée
-   * @returns {Promise<Array>} Résultats de la requête
-   */
   query(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.all(sql, params, (err, rows) => {
@@ -160,12 +186,6 @@ class Database {
     });
   }
 
-  /**
-   * Exécute une requête renvoyant une seule ligne
-   * @param {string} sql - Requête SQL
-   * @param {Array} params - Paramètres pour la requête préparée
-   * @returns {Promise<Object>} Résultat de la requête
-   */
   get(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.get(sql, params, (err, row) => {
@@ -179,12 +199,6 @@ class Database {
     });
   }
 
-  /**
-   * Exécute une requête modifiant la base de données (INSERT, UPDATE, DELETE)
-   * @param {string} sql - Requête SQL
-   * @param {Array} params - Paramètres pour la requête préparée
-   * @returns {Promise<Object>} Résultat avec lastID et changes
-   */
   run(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.run(sql, params, function(err) {
@@ -198,34 +212,19 @@ class Database {
     });
   }
 
+  // Méthodes de transaction pour la cohérence des données
   beginTransaction() {
-    return new Promise((resolve, reject) => {
-      this.db.run('BEGIN TRANSACTION', (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    return this.run('BEGIN TRANSACTION');
   }
-  
+
   commit() {
-    return new Promise((resolve, reject) => {
-      this.db.run('COMMIT', (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    return this.run('COMMIT');
   }
-  
+
   rollback() {
-    return new Promise((resolve, reject) => {
-      this.db.run('ROLLBACK', (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    return this.run('ROLLBACK');
   }
 }
-
 
 // Export d'une instance unique (pattern Singleton)
 const database = new Database();

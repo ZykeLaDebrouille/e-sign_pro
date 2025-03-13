@@ -6,6 +6,7 @@ services:
       - "5050:5050"
     volumes:
       - sqlite-data:/usr/src/app/database
+      - pdf-data:/usr/src/app/pdfs
     environment:
       - JWT_SECRET=ton_secret_jwt
       - JWT_REFRESH_SECRET=ton_secret_refresh
@@ -35,6 +36,7 @@ services:
 
 volumes:
   sqlite-data:
+  pdf-data:
 
 networks:
   app-network:

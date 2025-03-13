@@ -32,7 +32,6 @@ class UserController {
     role: role || 'ELEVE'
   };
 
-  console.log('Création d\'utilisateur avec les données:', userData);
   const user = await User.create(userData);
 
   // Générer les tokens
@@ -50,7 +49,6 @@ class UserController {
     }
   });
   console.log('Utilisateur créé avec succès:', user);
-  console.log('Token généré:', hiddenToken(accessToken));
   } catch (error) {
   console.error('Erreur lors de l\'inscription:', error);
   next(error);
