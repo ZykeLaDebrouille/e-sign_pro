@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userApi } from '../../services/api/userApi';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import userApi from '../../services/api/userApi'; // Chemin corrigé
+import API from '../../services/api';
 import './AuthStyles.css';
 
 const LoginPage = () => {
@@ -17,6 +19,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
+      // Utilisation directe de userApi
       const response = await userApi.login({ email, password });
       localStorage.setItem('token', response.data.data.accessToken);
       localStorage.setItem('user', JSON.stringify(response.data.data.user));
@@ -41,29 +44,35 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="input-icon-wrapper">
+              <FaEnvelope className="input-icon" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          <div className="form-group password-wrapper">
+          <div className="form-group">
             <label>Mot de passe</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? 'Masquer' : 'Afficher'}
-            </button>
+            <div className="input-icon-wrapper password-wrapper">
+              <FaLock className="input-icon" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <button

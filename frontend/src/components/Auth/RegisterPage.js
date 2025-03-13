@@ -1,9 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userApi } from '../../services/api/userApi';
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaBuilding } from 'react-icons/fa';
+import userApi from '../../services/api/userApi'; // Chemin corrigé
+
 import './AuthStyles.css';
 
+// Définition des rôles disponibles
+const ROLES = {
+  ADMIN: 'ADMIN',
+  ELEVE: 'ELEVE',
+  PARENT: 'PARENT',
+  PROFESSEUR: 'PROFESSEUR',
+  ENTREPRISE: 'ENTREPRISE'
+};
+
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -13,11 +26,10 @@ const RegisterPage = () => {
     companyName: '',
     acceptTerms: false
   });
-
-  const [loading, setLoading] = useState(false);
+  
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -51,8 +63,9 @@ const RegisterPage = () => {
         userData.companyName = formData.companyName;
       }
 
+      // Utilisation directe de userApi
       await userApi.register(userData);
-      navigate('/esignpro');
+      navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'inscription");
       console.error('Erreur d\'inscription:', err);
@@ -71,57 +84,69 @@ const RegisterPage = () => {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label>Nom</label>
-            <input
-              type="text"
-              name="lastname"
-              placeholder="Votre nom"
-              value={formData.lastname}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-icon-wrapper">
+              <FaUser className="input-icon" />
+              <input
+                type="text"
+                name="lastname"
+                placeholder="Votre nom"
+                value={formData.lastname}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label>Prénom</label>
-            <input
-              type="text"
-              name="firstname"
-              placeholder="Votre prénom"
-              value={formData.firstname}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-icon-wrapper">
+              <FaUser className="input-icon" />
+              <input
+                type="text"
+                name="firstname"
+                placeholder="Votre prénom"
+                value={formData.firstname}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label>Adresse e-mail</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Votre e-mail"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-icon-wrapper">
+              <FaEnvelope className="input-icon" />
+              <input
+                type="email"
+                name="email"
+                placeholder="Votre e-mail"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
-          <div className="form-group password-wrapper">
+          <div className="form-group">
             <label>Mot de passe</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              placeholder="Votre mot de passe"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? 'Masquer' : 'Afficher'}
-            </button>
+            <div className="input-icon-wrapper password-wrapper">
+              <FaLock className="input-icon" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                placeholder="Votre mot de passe"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
@@ -132,24 +157,27 @@ const RegisterPage = () => {
               onChange={handleChange}
               required
             >
-              <option value="ELEVE">Élève</option>
-              <option value="PARENT">Parent</option>
-              <option value="PROFESSEUR">Professeur</option>
-              <option value="ENTREPRISE">Entreprise</option>
+              <option value={ROLES.ELEVE}>Élève</option>
+              <option value={ROLES.PARENT}>Parent</option>
+              <option value={ROLES.PROFESSEUR}>Professeur</option>
+              <option value={ROLES.ENTREPRISE}>Entreprise</option>
             </select>
           </div>
 
-          {formData.role === 'ENTREPRISE' && (
+          {formData.role === ROLES.ENTREPRISE && (
             <div className="form-group">
               <label>Nom de l'entreprise</label>
-              <input
-                type="text"
-                name="companyName"
-                placeholder="Nom de l'entreprise"
-                value={formData.companyName}
-                onChange={handleChange}
-                required={formData.role === 'ENTREPRISE'}
-              />
+              <div className="input-icon-wrapper">
+                <FaBuilding className="input-icon" />
+                <input
+                  type="text"
+                  name="companyName"
+                  placeholder="Nom de l'entreprise"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  required={formData.role === ROLES.ENTREPRISE}
+                />
+              </div>
             </div>
           )}
 
@@ -171,11 +199,11 @@ const RegisterPage = () => {
           >
             {loading ? 'Création en cours...' : 'Créer un compte'}
           </button>
-
-          <p className="switch-link">
-            Déjà inscrit ? <a href="/login">Se connecter</a>
-          </p>
         </form>
+
+        <p className="switch-link">
+          Déjà inscrit ? <a href="/login">Se connecter</a>
+        </p>
       </div>
     </div>
   );

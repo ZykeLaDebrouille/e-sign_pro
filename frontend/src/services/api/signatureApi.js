@@ -1,46 +1,26 @@
-import api, { handleApiError } from './index';
+// frontend/src/services/api/signatureApi.js
+import API from '../api';
 
-export const getSignatureProgress = async (documentId) => {
-  try {
-    const response = await api.get(`/signatures?documentId=${documentId}`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération des signatures");
+const signatureApi = {
+  getSignatureProgress: (documentId) => {
+    return API.get(`/signatures?documentId=${documentId}`);
+  },
+
+  signDocument: (signatureData) => {
+    return API.post('/signatures', signatureData);
+  },
+
+  validateSignature: (validationToken) => {
+    return API.post(`/signatures/validate/${validationToken}`);
+  },
+
+  getSignatureRequestStatus: (requestId) => {
+    return API.get(`/signatures/request/${requestId}`);
+  },
+
+  sendSignatureRequest: (documentId, recipients) => {
+    return API.post('/signatures/request', { documentId, recipients });
   }
 };
 
-export const signDocument = async (signatureData) => {
-  try {
-    const response = await api.post('/signatures', signatureData);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la signature du document");
-  }
-};
-
-export const validateSignature = async (validationToken) => {
-  try {
-    const response = await api.post(`/signatures/validate/${validationToken}`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la validation de la signature");
-  }
-};
-
-export const getSignatureRequestStatus = async (requestId) => {
-  try {
-    const response = await api.get(`/signatures/request/${requestId}`);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de la récupération du statut de la demande");
-  }
-};
-
-export const sendSignatureRequest = async (documentId, recipients) => {
-  try {
-    const response = await api.post('/signatures/request', { documentId, recipients });
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, "Erreur lors de l'envoi de la demande de signature");
-  }
-};
+export default signatureApi;
