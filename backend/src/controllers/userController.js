@@ -83,27 +83,24 @@ class UserController {
     }
   }
 
-  async checkAuth(req, res, next) {
-    try {
-      const userId = req.user.id;
-      const user = await User.findById(userId);
-  
-      if (!user) {
-        throw new ApiError(404, 'Utilisateur non trouvé');
-      }
-  
-      res.status(200).json({
-        status: 'success',
-        data: {
-          authenticated: true,
-          user: user.toJSON()
-        }
-      });
-    } catch (error) {
-      next(error);
-    }
+// Vérification de l'authentification
+async checkAuth(req, res) {
+  try {
+    // L'utilisateur est déjà vérifié par le middleware auth
+    // req.user est défini par le middleware
+    res.status(200).json({
+      status: 'success',
+      data: req.user
+    });
+  } catch (error) {
+    console.error('Erreur checkAuth:', error);
+    res.status(401).json({
+      status: 'error',
+      message: 'Non authentifié'
+    });
   }
-  
+}
+
 
   // Déconnexion
   async logout(req, res, next) {

@@ -54,11 +54,7 @@ const AppRoutes = () => {
             {/* Routes protégées */}
             <Route 
               path="/esignpro" 
-              element={
-                <ProtectedRoute>
-                  <ESignProPage />
-                </ProtectedRoute>
-              }
+              element={<ESignProPage />}
             />
             <Route 
               path="/profile" 

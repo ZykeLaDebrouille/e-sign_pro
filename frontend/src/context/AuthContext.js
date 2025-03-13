@@ -2,8 +2,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import userApi from '../services/api/userApi';
 
-// Constantes pour les rôles
-export const ROLES = {
+// Définition des rôles
+const ROLES = {
   ADMIN: 'ADMIN',
   ELEVE: 'ELEVE',
   PARENT: 'PARENT',
@@ -11,50 +11,51 @@ export const ROLES = {
   ENTREPRISE: 'ENTREPRISE'
 };
 
+// Création du contexte
 const AuthContext = createContext();
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+// Hook personnalisé pour utiliser le contexte
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [authChecked, setAuthChecked] = useState(false);
 
+  // Vérifier l'authentification au chargement
   useEffect(() => {
-    // Vérification de l'authentification au chargement
     const verifyAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setCurrentUser(null);
-        setLoading(false);
-        return;
-      }
-
+      setLoading(true);
       try {
-        // Appel API pour vérifier si le token est valide
-        const response = await userApi.checkAuth();
-        console.log('Vérification auth réussie:', response.data);
+        const token = localStorage.getItem('token');
         
-        if (response.data && response.data.data) {
-          // Mettre à jour l'utilisateur courant avec les données du serveur
+        if (!token) {
+          setCurrentUser(null);
+          setAuthChecked(true);
+          setLoading(false);
+          return;
+        }
+        
+        // Vérifier la validité du token
+        const response = await userApi.checkAuth();
+        if (response.data.status === 'success') {
+          // Stocker les informations utilisateur
           setCurrentUser(response.data.data);
           
-          // S'assurer que les données utilisateur sont à jour dans localStorage
+          // Mettre à jour user dans localStorage si nécessaire
           localStorage.setItem('user', JSON.stringify(response.data.data));
         } else {
-          // En cas de réponse invalide, on se déconnecte
-          handleLogout();
+          // Token invalide
+          logout();
         }
       } catch (error) {
-        console.error('Erreur vérification auth:', error);
-        // Si erreur 401, déconnexion
-        if (error.response && error.response.status === 401) {
-          handleLogout();
+        console.error('Erreur de vérification d\'authentification:', error);
+        // Si erreur d'autorisation, nettoyer
+        if (error.response?.status === 401) {
+          logout();
         }
-        setError('Erreur de vérification d\'authentification');
       } finally {
+        setAuthChecked(true);
         setLoading(false);
       }
     };
@@ -62,92 +63,84 @@ export function AuthProvider({ children }) {
     verifyAuth();
   }, []);
 
-  async function login(credentials) {
+  // Fonction de connexion
+  const login = async (credentials) => {
     try {
-      setLoading(true);
       const response = await userApi.login(credentials);
-      
-      if (response.data && response.data.data) {
+      if (response.data.status === 'success') {
         const { accessToken, user } = response.data.data;
-        
-        // Stocker dans localStorage
         localStorage.setItem('token', accessToken);
         localStorage.setItem('user', JSON.stringify(user));
-        
-        // Mettre à jour le contexte
         setCurrentUser(user);
-        setError('');
-        
-        console.log('Connexion réussie:', user);
-        return true;
+        return { success: true };
       }
     } catch (error) {
-      console.error('Erreur login:', error);
-      setError(error.response?.data?.message || 'Erreur de connexion');
-      return false;
-    } finally {
-      setLoading(false);
+      console.error('Erreur de connexion:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erreur de connexion'
+      };
     }
-  }
+  };
 
-  async function register(userData) {
+  // Fonction d'inscription
+  const register = async (userData) => {
     try {
-      setLoading(true);
       const response = await userApi.register(userData);
-      setError('');
-      return response.data;
+      if (response.data.status === 'success') {
+        return { success: true };
+      }
     } catch (error) {
-      console.error('Erreur register:', error);
-      setError(error.response?.data?.message || 'Erreur d\'inscription');
-      throw error;
-    } finally {
-      setLoading(false);
+      console.error('Erreur d\'inscription:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erreur lors de l\'inscription'
+      };
     }
-  }
+  };
 
-  function handleLogout() {
-    // Nettoyer localStorage
+  // Fonction de déconnexion
+  const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
-    // Réinitialiser l'état
     setCurrentUser(null);
-    setError('');
     
-    // Appel optionnel à l'API logout
+    // Optionnel: appeler l'API de déconnexion
     try {
       userApi.logout();
     } catch (error) {
-      console.error('Erreur logout API:', error);
+      console.error('Erreur lors de la déconnexion sur le serveur:', error);
     }
-  }
-
-  // Vérification de rôle
-  const hasRole = (role) => {
-    if (!currentUser) return false;
-    
-    if (Array.isArray(role)) {
-      return role.includes(currentUser.role);
-    }
-    
-    return currentUser.role === role;
   };
 
-  // Vérification de permission (à implémenter selon tes besoins)
+  // Vérifier si l'utilisateur a un rôle spécifique
+  const hasRole = (requiredRoles) => {
+    if (!currentUser) return false;
+    
+    if (Array.isArray(requiredRoles)) {
+      return requiredRoles.includes(currentUser.role);
+    }
+    
+    return currentUser.role === requiredRoles;
+  };
+
+  // Vérifier si l'utilisateur a une permission spécifique
   const checkPermission = (permission) => {
-    return true; // Simplification pour le moment
+    // Implémenter la logique de vérification des permissions ici
+    // Pour l'instant, retournons true
+    return true;
   };
 
   const value = {
     currentUser,
     login,
     register,
-    logout: handleLogout,
+    logout,
     loading,
-    error,
     hasRole,
     checkPermission,
-    ROLES
+    ROLES,
+    authChecked
   };
 
   return (
@@ -155,4 +148,6 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export default AuthContext;

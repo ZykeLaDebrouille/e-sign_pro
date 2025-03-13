@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import userApi from '../../services/api/userApi'; // Chemin corrigé
-import API from '../../services/api';
 import './AuthStyles.css';
 
 const LoginPage = () => {
@@ -23,7 +22,7 @@ const LoginPage = () => {
       const response = await userApi.login({ email, password });
       localStorage.setItem('token', response.data.data.accessToken);
       localStorage.setItem('user', JSON.stringify(response.data.data.user));
-      navigate('/');
+      navigate('/esignpro');
     } catch (error) {
       console.error('Erreur de connexion:', error);
       setError(

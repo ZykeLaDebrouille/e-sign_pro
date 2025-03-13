@@ -65,7 +65,7 @@ const RegisterPage = () => {
 
       // Utilisation directe de userApi
       await userApi.register(userData);
-      navigate('/login');
+      navigate('/esignpro');
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'inscription");
       console.error('Erreur d\'inscription:', err);

@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { auth } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+ // Import direct sans destructuration
 
 // Routes publiques
 router.post('/register', userController.register.bind(userController));
@@ -10,12 +12,13 @@ router.post('/login', userController.login.bind(userController));
 router.post('/refresh-token', userController.refreshToken.bind(userController));
 
 // Routes protégées
-router.use(auth);
+// Ne pas utiliser router.use(auth) car cela applique auth à toutes les routes suivantes
+// Et nous le spécifions déjà sur chaque route individuelle
 
-router.get('/check-auth', auth, userController.checkAuth);
-router.get('/profile', userController.getProfile.bind(userController));
-router.put('/profile', userController.updateProfile.bind(userController));
-router.post('/change-password', userController.changePassword.bind(userController));
-router.post('/logout', userController.logout.bind(userController));
+router.get('/check-auth', auth, userController.checkAuth.bind(userController));
+router.get('/profile', auth, userController.getProfile.bind(userController));
+router.put('/profile', auth, userController.updateProfile.bind(userController));
+router.post('/change-password', auth, userController.changePassword.bind(userController));
+router.post('/logout', auth, userController.logout.bind(userController));
 
 module.exports = router;

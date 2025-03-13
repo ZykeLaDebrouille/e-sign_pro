@@ -1,26 +1,30 @@
-// backend/src/middleware/auth.js
+// middleware/auth.js
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
 const User = require('../models/User');
 const { hasPermission } = require('../config/roles');
 
+// Middleware d'authentification principal
 const auth = async (req, res, next) => {
   try {
-    // Vérifier le token dans les cookies ou dans le header Authorization
-    const token = req.cookies.accessToken || 
-                  (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+    // Vérifier le token dans les headers Authorization
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next(new ApiError(401, 'Authentification requise'));
+    }
 
+    const token = authHeader.split(' ')[1];
     if (!token) {
-      throw new ApiError(401, 'Authentification requise');
+      return next(new ApiError(401, 'Authentification requise'));
     }
 
     // Vérifier et décoder le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Récupérer l'utilisateur
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.id);
     if (!user) {
-      throw new ApiError(401, 'Utilisateur non trouvé');
+      return next(new ApiError(401, 'Utilisateur non trouvé'));
     }
 
     // Ajouter l'utilisateur à la requête
@@ -28,41 +32,46 @@ const auth = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
-      next(new ApiError(401, 'Token invalide'));
+      return next(new ApiError(401, 'Token invalide'));
     } else if (error.name === 'TokenExpiredError') {
-      next(new ApiError(401, 'Token expiré'));
+      return next(new ApiError(401, 'Token expiré'));
     } else {
-      next(error);
+      return next(error);
     }
   }
 };
 
+// Middleware pour vérifier les rôles
 const checkRole = (roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Non authentifié' });
+      return next(new ApiError(401, 'Non authentifié'));
     }
     
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Accès refusé: rôle non autorisé' });
+    const roleArray = Array.isArray(roles) ? roles : [roles];
+    
+    if (!roleArray.includes(req.user.role)) {
+      return next(new ApiError(403, 'Accès refusé: rôle non autorisé'));
     }
     
     next();
   };
 };
 
+// Middleware pour vérifier les permissions
 const checkPermission = (permission) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Non authentifié' });
+      return next(new ApiError(401, 'Non authentifié'));
     }
     
     if (!hasPermission(req.user.role, permission)) {
-      return res.status(403).json({ message: 'Accès refusé: permission non accordée' });
+      return next(new ApiError(403, 'Accès refusé: permission non accordée'));
     }
     
     next();
   };
 };
 
+// Exporter correctement les fonctions
 module.exports = { auth, checkRole, checkPermission };
