@@ -126,24 +126,31 @@ Ce projet vise à moderniser et simplifier un processus administratif crucial po
 
 ```mermaid
 sequenceDiagram
-    participant Élève
-    participant Parent
-    participant Entreprise
-    participant Équipe Pédagogique
-    participant Système E-Sign PRO
+    participant A as Élève
+    participant B as Système E-Sign PRO
+    participant D as Parents
+    participant E as Entreprise
+    participant F as Équipe Pédagogique
+    participant G as Document signé
 
-    Élève ->> Système E-Sign PRO: Upload du PDF de la convention
-    Système E-Sign PRO ->> Élève: Confirmation de l'upload
-    Système E-Sign PRO ->> Élève: Demande de signature
-    Élève ->> Système E-Sign PRO: Signature électronique
-    Système E-Sign PRO ->> Parent: Notification pour signature
-    Parent ->> Système E-Sign PRO: Signature électronique
-    Système E-Sign PRO ->> Entreprise: Notification pour signature
-    Entreprise ->> Système E-Sign PRO: Signature électronique
-    Système E-Sign PRO ->> Équipe Pédagogique: Notification pour validation finale
-    Équipe Pédagogique ->> Système E-Sign PRO: Validation finale
-    Système E-Sign PRO ->> Tous les participants: Notification de complétion
-    Système E-Sign PRO ->> Élève: Génération du PDF final
+    A ->> B: Upload de la convention
+    B ->> A: Envoi du lien de signature
+    A ->> B: Signature électronique
+    
+    B ->> D: Envoi du lien de signature
+    D ->> B: Signature électronique
+    
+    B ->> E: Envoi du lien de signature
+    E ->> B: Signature électronique
+    
+    B ->> F: Envoi du lien de validation
+    F ->> B: Validation finale
+    
+    B ->> G: Génération du PDF final
+    G -->> A: Document accessible à l'élève
+    G -->> D: Document accessible aux parents
+    G -->> E: Document accessible à l'entreprise
+    G -->> F: Document accessible à l'équipe pédagogique
 ```
 
 Flowchart:
