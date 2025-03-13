@@ -147,7 +147,7 @@ sequenceDiagram
 ```
 
 Flowchart:
-
+```mermaid
 flowchart LR
     A([Élève]) -->|"Upload"| B[E-Sign PRO]
     B -->|"Lien"| C([Élève])
