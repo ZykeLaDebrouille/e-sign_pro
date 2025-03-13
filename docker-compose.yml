@@ -3,9 +3,16 @@ services:
     build:
       context: ./backend
     ports:
-      - "5000:5000"
+      - "5050:5050"
+    volumes:
+      - sqlite-data:/usr/src/app/database
+    environment:
+      - JWT_SECRET=ton_secret_jwt
+      - JWT_REFRESH_SECRET=ton_secret_refresh
+      - NODE_ENV=development
     networks:
       - app-network
+
 
   frontend:
     build:
@@ -25,6 +32,9 @@ services:
       - frontend
     networks:
       - app-network
+
+volumes:
+  sqlite-data:
 
 networks:
   app-network:

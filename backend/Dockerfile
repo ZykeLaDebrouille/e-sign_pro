@@ -4,6 +4,9 @@ FROM node:18.16.0-alpine
 # Définition du répertoire de travail dans le conteneur
 WORKDIR /usr/src/app
 
+# Création d'un répertoire pour la base de données
+RUN mkdir -p database
+
 # Copie uniquement des fichiers de dépendances pour optimiser le cache Docker
 COPY package*.json ./
 
