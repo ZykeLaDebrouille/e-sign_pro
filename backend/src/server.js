@@ -33,7 +33,7 @@ async function startServer() {
     // Initialiser les tables restantes après le démarrage du serveur
     setTimeout(async () => {
       try {
-        await database.initializeRemainingTables();
+        await database.initializeTables();
       } catch (error) {
         console.error('Erreur lors de l\'initialisation complète des tables:', error);
       }

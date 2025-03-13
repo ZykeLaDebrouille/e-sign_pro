@@ -42,16 +42,24 @@ const AppRoutes = () => {
       <Router>
         <Navbar />
         <div style={{ flex: 1 }}>
-          <Routes>
+        <Routes>
             {/* Routes publiques */}
             <Route path="/" element={<HomePage />} />
-            <Route path="/contact" element={<ContactPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             
             {/* Routes protégées */}
+            <Route 
+              path="/esignpro" 
+              element={
+                <ProtectedRoute>
+                  <ESignProPage />
+                </ProtectedRoute>
+              }
+            />
             <Route 
               path="/profile" 
               element={
@@ -60,16 +68,8 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               }
             />
-            <Route 
-              path="/esignpro/*" 
-              element={
-                <ProtectedRoute>
-                  <ESignProPage />
-                </ProtectedRoute>
-              } 
-            />
             
-            {/* Redirection pour les routes inconnues */}
+            {/* Redirection par défaut */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

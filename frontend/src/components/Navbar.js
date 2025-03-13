@@ -1,38 +1,17 @@
+// src/components/Navbar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import '../styles/Navbar.css';
 
 const Navbar = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const { currentUser, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
+  // Ferme le menu mobile lors des changements de route
   useEffect(() => {
-    // Vérifier l'authentification
-    const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      const userStr = localStorage.getItem('user');
-      
-      if (token && userStr) {
-        setIsAuthenticated(true);
-        try {
-          setUser(JSON.parse(userStr));
-        } catch (e) {
-          console.error('Erreur parsing user:', e);
-        }
-      } else {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    };
-
-    checkAuth();
-    // Vérifier à chaque changement de route
-    window.addEventListener('storage', checkAuth);
-    
-    return () => {
-      window.removeEventListener('storage', checkAuth);
-    };
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
   const toggleMobileMenu = () => {
@@ -52,43 +31,53 @@ const Navbar = () => {
 
         <ul className={mobileMenuOpen ? 'nav-menu active' : 'nav-menu'}>
           <li className="nav-item">
-            <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/" className="nav-link">
               Accueil
             </Link>
           </li>
           <li className="nav-item">
-            <Link to="/about" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/about" className="nav-link">
               À propos
             </Link>
           </li>
           <li className="nav-item">
-            <Link to="/contact" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/contact" className="nav-link">
               Contact
             </Link>
           </li>
           
-          {isAuthenticated ? (
+          {currentUser ? (
+            // Pour un utilisateur connecté
             <>
               <li className="nav-item">
-                <Link to="/esignpro" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/esignpro" className="nav-link">
                   Mon espace
                 </Link>
               </li>
               <li className="nav-item">
-                <Link to="/profile" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                  Mon profil
-                </Link>
+                <button 
+                  onClick={logout} 
+                  className="nav-link" 
+                  style={{ 
+                    border: 'none', 
+                    background: 'none',
+                    cursor: 'pointer' 
+                  }}
+                >
+                  Déconnexion
+                </button>
               </li>
             </>
           ) : (
+            // Pour un utilisateur non connecté
             <>
               <li className="nav-item">
-                <Link to="/login" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/login" className="nav-link">
                   Connexion
                 </Link>
               </li>
               <li className="nav-item">
-                <Link to="/register" className="nav-link button" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/register" className="nav-link button">
                   S'inscrire
                 </Link>
               </li>

@@ -1,8 +1,8 @@
-// frontend/src/context/AuthContext.js
-import React, { createContext, useState, useEffect, useContext } from 'react';
+// src/context/AuthContext.js
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import userApi from '../services/api/userApi';
 
-// Rôles disponibles
+// Constantes pour les rôles
 export const ROLES = {
   ADMIN: 'ADMIN',
   ELEVE: 'ELEVE',
@@ -11,143 +11,142 @@ export const ROLES = {
   ENTREPRISE: 'ENTREPRISE'
 };
 
-// Création du contexte
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
-// Hook personnalisé pour utiliser le contexte
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
-// Fournisseur du contexte
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-  // Vérifier l'authentification au chargement
   useEffect(() => {
-    const checkAuth = async () => {
-      const storedUser = localStorage.getItem('user');
+    // Vérification de l'authentification au chargement
+    const verifyAuth = async () => {
       const token = localStorage.getItem('token');
-      
-      if (storedUser && token) {
-        try {
-          // Définir l'utilisateur stocké d'abord
-          setCurrentUser(JSON.parse(storedUser));
-          
-          // Puis vérifier l'authenticité auprès du serveur
-          try {
-            const response = await userApi.checkAuth();
-            if (response.data && response.data.data && response.data.data.user) {
-              setCurrentUser(response.data.data.user);
-              // Mettre à jour le stockage local
-              localStorage.setItem('user', JSON.stringify(response.data.data.user));
-            }
-          } catch (err) {
-            console.log('Session expirée, maintien de l\'utilisateur local');
-          }
-        } catch (err) {
-          console.error('Erreur dans checkAuth:', err);
-          // Ne pas déconnecter tout de suite
-        }
+      if (!token) {
+        setCurrentUser(null);
+        setLoading(false);
+        return;
       }
-      
-      setLoading(false);
+
+      try {
+        // Appel API pour vérifier si le token est valide
+        const response = await userApi.checkAuth();
+        console.log('Vérification auth réussie:', response.data);
+        
+        if (response.data && response.data.data) {
+          // Mettre à jour l'utilisateur courant avec les données du serveur
+          setCurrentUser(response.data.data);
+          
+          // S'assurer que les données utilisateur sont à jour dans localStorage
+          localStorage.setItem('user', JSON.stringify(response.data.data));
+        } else {
+          // En cas de réponse invalide, on se déconnecte
+          handleLogout();
+        }
+      } catch (error) {
+        console.error('Erreur vérification auth:', error);
+        // Si erreur 401, déconnexion
+        if (error.response && error.response.status === 401) {
+          handleLogout();
+        }
+        setError('Erreur de vérification d\'authentification');
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    checkAuth();
+
+    verifyAuth();
   }, []);
 
-  // Vérifier si l'utilisateur a un rôle spécifique
-  const hasRole = (roles) => {
-    if (!currentUser) return false;
-    if (Array.isArray(roles)) {
-      return roles.includes(currentUser.role);
-    }
-    return currentUser.role === roles;
-  };
-
-  // Fonction de connexion
-  const login = async (email, password) => {
+  async function login(credentials) {
     try {
       setLoading(true);
-      setError(null);
-      
-      const response = await userApi.login({ email, password });
-      console.log('Réponse de login:', response.data);
+      const response = await userApi.login(credentials);
       
       if (response.data && response.data.data) {
-        const { user, accessToken } = response.data.data;
+        const { accessToken, user } = response.data.data;
         
+        // Stocker dans localStorage
         localStorage.setItem('token', accessToken);
         localStorage.setItem('user', JSON.stringify(user));
-        setCurrentUser(user);
         
-        console.log('Utilisateur connecté:', user);
-        return user;
-      } else {
-        throw new Error('Format de réponse invalide');
+        // Mettre à jour le contexte
+        setCurrentUser(user);
+        setError('');
+        
+        console.log('Connexion réussie:', user);
+        return true;
       }
-    } catch (err) {
-      console.error('Erreur de connexion:', err);
-      setError(err.response?.data?.message || 'Échec de la connexion');
-      throw err;
+    } catch (error) {
+      console.error('Erreur login:', error);
+      setError(error.response?.data?.message || 'Erreur de connexion');
+      return false;
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  // Fonction d'inscription
-  const register = async (userData) => {
+  async function register(userData) {
     try {
       setLoading(true);
-      setError(null);
-      
-      console.log('Envoi de demande d\'inscription:', userData);
       const response = await userApi.register(userData);
-      console.log('Réponse d\'inscription:', response.data);
-      
-      if (response.data && response.data.data) {
-        const { user, accessToken } = response.data.data;
-        
-        localStorage.setItem('token', accessToken);
-        localStorage.setItem('user', JSON.stringify(user));
-        setCurrentUser(user);
-        
-        return user;
-      } else {
-        throw new Error('Format de réponse invalide');
-      }
-    } catch (err) {
-      console.error('Erreur d\'inscription:', err);
-      setError(err.response?.data?.message || 'Échec de l\'inscription');
-      throw err;
+      setError('');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur register:', error);
+      setError(error.response?.data?.message || 'Erreur d\'inscription');
+      throw error;
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  // Fonction de déconnexion
-  const logout = async () => {
+  function handleLogout() {
+    // Nettoyer localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Réinitialiser l'état
+    setCurrentUser(null);
+    setError('');
+    
+    // Appel optionnel à l'API logout
     try {
-      await userApi.logout();
-    } catch (err) {
-      console.error('Erreur de déconnexion:', err);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setCurrentUser(null);
+      userApi.logout();
+    } catch (error) {
+      console.error('Erreur logout API:', error);
     }
+  }
+
+  // Vérification de rôle
+  const hasRole = (role) => {
+    if (!currentUser) return false;
+    
+    if (Array.isArray(role)) {
+      return role.includes(currentUser.role);
+    }
+    
+    return currentUser.role === role;
   };
 
-  // Valeur du contexte avec les fonctions
+  // Vérification de permission (à implémenter selon tes besoins)
+  const checkPermission = (permission) => {
+    return true; // Simplification pour le moment
+  };
+
   const value = {
     currentUser,
-    loading,
-    error,
     login,
     register,
-    logout,
+    logout: handleLogout,
+    loading,
+    error,
     hasRole,
+    checkPermission,
     ROLES
   };
 
@@ -156,7 +155,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Export pour l'utilisation avec useContext
-export { AuthContext };
+}
