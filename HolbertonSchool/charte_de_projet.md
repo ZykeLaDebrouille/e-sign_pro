@@ -146,18 +146,27 @@ sequenceDiagram
     Système E-Sign PRO ->> Élève: Génération du PDF final
 ```
 
-flow chart:
+Flowchart:
 
-```mermaid
-graph LR
-    A[Élève] -->|Upload du PDF| B{Système E-Sign PRO}
-    B -->|Notification| C[Parent]
-    B -->|Notification| D[Entreprise]
-    B -->|Notification| E[Équipe Pédagogique]
-    C -->|Signature| B
-    D -->|Signature| B
-    E -->|Validation| B
-    B -->|Génération du PDF final| F[PDF Signé]
-    B -->|Archivage sécurisé| G[(Base de Données)]
-    F -->|Téléchargement| A
+flowchart LR
+    A([Élève]) -->|"Upload"| B[E-Sign PRO]
+    B -->|"Lien"| C([Élève])
+    C -->|"Signature"| B
+    B -->|"Lien"| D([Parents])
+    D -->|"Signature"| B
+    B -->|"Lien"| E([Entreprise])
+    E -->|"Signature"| B
+    B -->|"Lien"| F([Équipe Pédagogique])
+    F -->|"Validation"| B
+    B -->|"PDF final"| G[Document signé]
+    
+    %% Couleurs distinctes pour chaque acteur
+    style A fill:#FF9AA2,stroke:#333,stroke-width:2px %% Rose pour
+    style B fill:#189AB4,stroke:#05445E,stroke-width:2px,color:white %% Bleu pour le systme
+    style C fill:#FF9AA2,stroke:#333,stroke-width:2px %% Rose pour 
+    style D fill:#FFDAC1,stroke:#333,stroke-width:2px %% Orange pour les parents
+    style E fill:#B5EAD7,stroke:#333,stroke-width:2px %% Vert pour l'entreprise
+    style F fill:#C7CEEA,stroke:#333,stroke-width:2px %% Violet pour 
+    style G fill:#E2F0CB,stroke:#333,stroke-width:2px %% Jaune-vert pour le document final
+
 ```
