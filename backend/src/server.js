@@ -1,9 +1,5 @@
-/**
- * Point d'entrée principal du serveur
- * Initialise l'application et lance le serveur HTTP
- */
 const path = require('path');
-// Chargement des variables d'environnement depuis le fichier .env
+
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Logs de débogage pour vérifier la configuration
@@ -18,7 +14,6 @@ console.log('Environment variables:', {
 const app = require('./app');
 const database = require('./config/database');
 
-// Port d'écoute du serveur (5050 par défaut)
 const PORT = process.env.PORT || 5050;
 
 /**

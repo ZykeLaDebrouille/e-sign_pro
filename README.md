@@ -79,8 +79,9 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 
 #### **Base de Données :**
 
-- **SQLite** (option locale) ou **MongoDB** (pour une approche NoSQL)  
+- **SQLite** (option locale)  
   *Justification* : Choix guidé par la simplicité et la rapidité lors de la phase de prototypage du MVP.
+
 
 #### **Hébergement :**
 
@@ -127,8 +128,6 @@ L’architecture Docker se compose de plusieurs services :
 **Exemple simplifié du fichier docker-compose.yml :**
 
 ```yaml
-version: '3.8'
-
 services:
   frontend:
     build:
@@ -143,11 +142,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-
-  db:
-    image: mongo
-    ports:
-      - "27017:27017"
 
   proxy:
     build:

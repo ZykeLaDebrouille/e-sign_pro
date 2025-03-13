@@ -1,3 +1,6 @@
-backend/node_modules
-npm-debug.log
-node_modules
+frontend/node_modules
+logs/
+*.log
+.DS_Store
+.env
+.git

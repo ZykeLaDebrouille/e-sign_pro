@@ -65,8 +65,8 @@ Digitaliser et simplifier le processus de signature et d’archivage des convent
 
 #### **Base de données :**
 
-- **SQLite** (local) ou **MongoDB** (si NoSQL préféré).
-  - Raison : Simplicite et rapidité pour prototyper un MVP.
+- **SQLite** (local)
+  - Raison : Simplicité et rapidité pour prototyper un MVP.
 
 #### **Génération PDF :**
 
