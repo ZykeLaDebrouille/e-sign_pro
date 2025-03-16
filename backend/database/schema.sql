@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     firstname TEXT,
     lastname TEXT,
-    role TEXT DEFAULT 'ELEVE',
+    userRole TEXT DEFAULT 'ELEVE',
     is_active BOOLEAN DEFAULT 1,
     telephone TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

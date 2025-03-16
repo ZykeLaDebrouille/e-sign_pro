@@ -1,7 +1,3 @@
-/**
- * Configuration principale de l'application Express
- * Définit les middlewares, la gestion CORS, et le montage des routes
- */
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
@@ -35,7 +31,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Middlewares pour parser les requêtes et cookies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -45,10 +40,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Montage des routes sous le préfixe /api
 app.use('/api', routes);
-
-// Middleware centralisé de gestion d'erreurs
 app.use(errorHandler);
 
 // Gestion des promesses non capturées
@@ -57,7 +49,6 @@ process.on('unhandledRejection', (err) => {
   process.exit(1);
 });
 
-// Affichage des routes disponibles (utile pour le débogage)
 console.log('Endpoints de l\'app :', listEndpoints(app));
 
 module.exports = app;

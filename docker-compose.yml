@@ -3,7 +3,7 @@ services:
     build:
       context: ./backend
     ports:
-      - "5050:5050"
+      - "5500:5500"
     volumes:
       - sqlite-data:/usr/src/app/database
       - pdf-data:/usr/src/app/pdfs

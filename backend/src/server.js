@@ -14,7 +14,7 @@ console.log('Environment variables:', {
 const app = require('./app');
 const database = require('./config/database');
 
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 5500;
 
 
 

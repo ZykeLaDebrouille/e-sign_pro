@@ -9,20 +9,18 @@ class User {
     this.email = userData.email;
     this.firstname = userData.firstname;
     this.lastname = userData.lastname;
-    this.role = userData.role;
+    this.userRole = userData.userRole;
     this.created_at = userData.created_at;
     this.updated_at = userData.updated_at;
   }
 
   // Méthodes statiques pour la gestion des utilisateurs
-  static async create({ email, password, firstname, lastname, role }) {
+  static async create({ email, password, firstname, lastname, userRole }) {
     try {
-      // Vérifier si l'email existe déjà
       const existingUser = await database.get(
         'SELECT email FROM users WHERE email = ?',
         [email]
       );
-  
       if (existingUser) {
         throw new ApiError(409, 'Cet email est déjà utilisé');
       }
@@ -30,18 +28,14 @@ class User {
       // Vérifier si le rôle est valide
       const { ROLES } = require('../config/roles');
       const validRoles = Object.values(ROLES);
-      
       // Utiliser un rôle par défaut si non fourni ou invalide
       const userRole = (role && validRoles.includes(role)) ? role : ROLES.ELEVE;
   
-      // Hasher le mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
-  
-      console.log('Insertion dans la BD avec les valeurs:', { email, hashedPassword, firstname, lastname, userRole });
       
       // Insérer l'utilisateur
       const result = await database.run(
-        `INSERT INTO users (email, password, firstname, lastname, role)
+        `INSERT INTO users (email, password, firstname, lastname, userRole)
         VALUES (?, ?, ?, ?, ?)`,
         [email, hashedPassword, firstname, lastname, userRole]
       );

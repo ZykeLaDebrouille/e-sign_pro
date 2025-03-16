@@ -24,7 +24,7 @@ RUN mkdir -p /usr/src/app/database /usr/src/app/pdfs \
     && touch /usr/src/app/database/esign.sqlite \
     && chmod 777 /usr/src/app/database/esign.sqlite
 
-EXPOSE 5050
+EXPOSE 5500
 
 # Utiliser ces arguments pour activer le débogage
 CMD ["node", "--trace-warnings", "--unhandled-rejections=strict", "src/server.js"]

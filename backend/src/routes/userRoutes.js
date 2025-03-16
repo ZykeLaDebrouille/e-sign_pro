@@ -12,9 +12,6 @@ router.post('/login', userController.login.bind(userController));
 router.post('/refresh-token', userController.refreshToken.bind(userController));
 
 // Routes protégées
-// Ne pas utiliser router.use(auth) car cela applique auth à toutes les routes suivantes
-// Et nous le spécifions déjà sur chaque route individuelle
-
 router.get('/check-auth', auth, userController.checkAuth.bind(userController));
 router.get('/profile', auth, userController.getProfile.bind(userController));
 router.put('/profile', auth, userController.updateProfile.bind(userController));

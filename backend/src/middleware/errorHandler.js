@@ -1,7 +1,3 @@
-/**
- * Middleware central de gestion des erreurs
- * Standardise le format des réponses d'erreur de l'API
- */
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -15,7 +11,6 @@ const ApiError = require('../utils/ApiError');
 const errorHandler = (err, req, res, next) => {
   let error = err;
 
-  // Normalise l'erreur en ApiError si ce n'est pas déjà le cas
   if (!(error instanceof ApiError)) {
     const statusCode = error.statusCode || 500;
     const message = error.message || 'Une erreur est survenue';
@@ -32,7 +27,6 @@ const errorHandler = (err, req, res, next) => {
     }),
   };
 
-  // Envoi de la réponse avec le code HTTP approprié
   res.status(error.statusCode).json(response);
 };
 

@@ -3,42 +3,33 @@ const ApiError = require('../utils/ApiError');
 const { validateEmail, validatePassword } = require('../utils/validators');
 
 class UserController {
-  // Inscription d'un nouvel utilisateur
   async register(req, res, next) {
     try {
-      const { email, password, firstname, lastname, role, companyName } = req.body;
+      const { email, password, firstname, lastname, userRole, companyName } = req.body;
 
-      // Validation des données
       if (!email || !password) {
         throw new ApiError(400, 'Email et mot de passe requis');
       }
-
-      // Valider le format de l'email
       if (!validateEmail(email)) {
         throw new ApiError(400, 'Format d\'email invalide');
       }
-
-      // Valider le mot de passe
       if (!validatePassword(password)) {
         throw new ApiError(400, 'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre');
       }
 
-  // Créer l'utilisateur
   const userData = {
     email,
     password,
     firstname,
     lastname,
-    role: role || 'ELEVE'
+    userRole: role || 'ELEVE'
   };
 
   const user = await User.create(userData);
 
-  // Générer les tokens
   const accessToken = User.generateAccessToken(user);
   const refreshToken = User.generateRefreshToken(user);
 
-  // Définir les cookies
   this.setTokenCookies(res, accessToken, refreshToken);
 
   res.status(201).json({
@@ -55,8 +46,6 @@ class UserController {
   }
 }
 
-
-  // Connexion utilisateur
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
@@ -65,10 +54,8 @@ class UserController {
         throw new ApiError(400, 'Email et mot de passe requis');
       }
 
-      // Authentifier l'utilisateur
       const { user, accessToken, refreshToken } = await User.authenticate(email, password);
 
-      // Définir les cookies
       this.setTokenCookies(res, accessToken, refreshToken);
 
       res.status(200).json({
@@ -83,11 +70,9 @@ class UserController {
     }
   }
 
-// Vérification de l'authentification
+
 async checkAuth(req, res) {
   try {
-    // L'utilisateur est déjà vérifié par le middleware auth
-    // req.user est défini par le middleware
     res.status(200).json({
       status: 'success',
       data: req.user
@@ -102,10 +87,8 @@ async checkAuth(req, res) {
 }
 
 
-  // Déconnexion
   async logout(req, res, next) {
     try {
-      // Supprimer les cookies
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
 
@@ -118,10 +101,9 @@ async checkAuth(req, res) {
     }
   }
 
-  // Obtenir le profil utilisateur
   async getProfile(req, res, next) {
     try {
-      const userId = req.user.id; // Fourni par le middleware d'authentification
+      const userId = req.user.id;
       const user = await User.findById(userId);
 
       if (!user) {
@@ -139,7 +121,6 @@ async checkAuth(req, res) {
     }
   }
 
-  // Mettre à jour le profil utilisateur
   async updateProfile(req, res, next) {
     try {
       const userId = req.user.id;
@@ -150,7 +131,6 @@ async checkAuth(req, res) {
         throw new ApiError(404, 'Utilisateur non trouvé');
       }
 
-      // Si l'email est modifié, vérifier son format
       if (email && !validateEmail(email)) {
         throw new ApiError(400, 'Format d\'email invalide');
       }
@@ -172,7 +152,6 @@ async checkAuth(req, res) {
     }
   }
 
-  // Changer le mot de passe
   async changePassword(req, res, next) {
     try {
       const userId = req.user.id;
@@ -182,7 +161,6 @@ async checkAuth(req, res) {
         throw new ApiError(400, 'Mot de passe actuel et nouveau mot de passe requis');
       }
 
-      // Valider le nouveau mot de passe
       if (!validatePassword(newPassword)) {
         throw new ApiError(400, 'Le nouveau mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre');
       }
@@ -220,7 +198,7 @@ async checkAuth(req, res) {
         throw new ApiError(404, 'Utilisateur non trouvé');
       }
 
-      // Générer un nouveau access token
+
       const newAccessToken = User.generateAccessToken(user);
 
       res.status(200).json({
@@ -236,7 +214,6 @@ async checkAuth(req, res) {
 
   // Méthode utilitaire pour définir les cookies de token
   setTokenCookies(res, accessToken, refreshToken) {
-    // Cookie pour le access token
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -244,7 +221,6 @@ async checkAuth(req, res) {
       maxAge: 3600000 // 1 heure
     });
 
-    // Cookie pour le refresh token
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

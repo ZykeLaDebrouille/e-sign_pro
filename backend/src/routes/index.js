@@ -4,12 +4,11 @@ const userRoutes = require('./userRoutes');
 const conventionsRoutes = require('./conventionsRoutes');
 
 
-// Route de base pour vérifier que l'API fonctionne
 router.get('/', (req, res) => {
   res.json({ message: 'Bienvenue sur l\'API de signature électronique' });
 });
 
-// Routes utilisateur
+// Routes
 router.use('/users', userRoutes);
 router.use('/conventions', conventionsRoutes);
 
