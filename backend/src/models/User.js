@@ -28,11 +28,10 @@ class User {
       // Vérifier si le rôle est valide
       const { ROLES } = require('../config/roles');
       const validRoles = Object.values(ROLES);
-      // Utiliser un rôle par défaut si non fourni ou invalide
-      const userRole = (userRole && validRoles.includes(userRole)) ? userRole : ROLES.ELEVE;
+      userRole = (userRole && validRoles.includes(userRole)) ? userRole : ROLES.ELEVE;
   
       const hashedPassword = await bcrypt.hash(password, 10);
-      
+  
       // Insérer l'utilisateur
       const result = await database.run(
         `INSERT INTO users (email, password, firstname, lastname, userRole)
@@ -45,7 +44,7 @@ class User {
       // Récupérer l'utilisateur créé
       const newUser = await database.get(
         'SELECT * FROM users WHERE id = ?',
-        [result.id]
+        [result.lastID] // Utilise `lastID` au lieu de `id`
       );
   
       if (!newUser) {
@@ -58,6 +57,7 @@ class User {
       throw error instanceof ApiError ? error : new ApiError(500, 'Erreur lors de la création de l\'utilisateur: ' + error.message);
     }
   }
+  
 
   static async findByEmail(email) {
     try {
@@ -140,40 +140,39 @@ class User {
   async update(updateData) {
     try {
       const allowedUpdates = ['firstname', 'lastname', 'email'];
-      const updates = {};
       
       // Filtrer les mises à jour autorisées
-      Object.keys(updateData).forEach(key => {
-        if (allowedUpdates.includes(key)) {
-          updates[key] = updateData[key];
-        }
-      });
-
+      const updates = Object.keys(updateData)
+        .filter(key => allowedUpdates.includes(key))
+        .reduce((obj, key) => ({ ...obj, [key]: updateData[key] }), {});
+  
       if (Object.keys(updates).length === 0) {
         return this;
       }
-
+  
       // Construire la requête de mise à jour
       const updateFields = Object.keys(updates)
         .map(key => `${key} = ?`)
         .join(', ');
+        
       const values = [...Object.values(updates), this.id];
-
+  
       await database.run(
         `UPDATE users SET ${updateFields}, updated_at = CURRENT_TIMESTAMP 
         WHERE id = ?`,
         values
       );
-
+  
       // Récupérer l'utilisateur mis à jour
       const updatedUser = await User.findById(this.id);
-      Object.assign(this, updatedUser);
-
-      return this;
-    } catch (error) {
-      throw new ApiError(500, 'Erreur lors de la mise à jour de l\'utilisateur');
+      
+    Object.assign(this.updatedUser)
+  
+    return this;
+    }catch(error){
+    throw new ApiError(500,'Erreur lors mise à jour utilisateur')
     }
-  }
+    }
 
   async changePassword(currentPassword, newPassword) {
     try {

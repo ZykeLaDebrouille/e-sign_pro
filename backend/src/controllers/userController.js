@@ -9,8 +9,8 @@ class UserController {
     try {
       const { email, password, firstname, lastname, userRole } = req.body;
 
-      if (!email || !password) {
-        throw new ApiError(400, 'Email et mot de passe requis');
+      if (!email || !password || !userRole) {
+        throw new ApiError(400, 'Email, mot de passe et rôle utilisateur sont requis');
       }
       if (!validateEmail(email)) {
         throw new ApiError(400, 'Format d\'email invalide');
@@ -181,28 +181,33 @@ class UserController {
 	next(error)
 	}
 	}
-
-	// Rafraîchir le token JWT
 	
-	async refreshToken(req,res,next){
-	try{
-	const{refreshToken}=req.cookies
-	
-	if(!refreshToken){
-	throw new ApiError(401,'token non fourni')
-	}
-	const decoded=jwt.verify(refreshToken.process.env.JWT_REFRESH_SECRET)
-	const user=await User.findById(decoded.userId)
-	
-	if(!user){
-	throw new ApiError(404,'Utilisateur non trouvé')
-	}
-	const newAccessToken=User.generateAccessToken(user)
-	res.status.json({status:'success',data:{accessToken:newAccessToken}})
-	}catch(error){
-	next(error)
-	}
-	}
+  async refreshToken(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+  
+      if (!refreshToken) {
+        throw new ApiError(401, 'Token de rafraîchissement non fourni');
+      }
+  
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const user = await User.findById(decoded.userId);
+  
+      if (!user) {
+        throw new ApiError(404, 'Utilisateur non trouvé');
+      }
+  
+      const newAccessToken = User.generateAccessToken(user);
+  
+      res.status(200).json({
+        status: 'success',
+        data: { accessToken: newAccessToken }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
 
     setTokenCookies(res, accessToken, refreshToken) {
       const isProduction = process.env.NODE_ENV === 'production';

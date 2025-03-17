@@ -16,16 +16,19 @@ const app = express();
 app.use(helmet());
 
 const corsOptions = {
-  origin: function(origin, callback) {
-    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost,http://localhost:3000').split(',');
-    // Permettre les requêtes sans origine (comme les applications mobiles ou postman)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
+  origin: function (origin, callback) {
+    if (process.env.NODE_ENV === 'development') {
+      callback(null, true); // Autorise toutes les origines en développement
     } else {
-      callback(new Error('Non autorisé par CORS'));
+      const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost,http://localhost:3000').split(',');
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Non autorisé par CORS'));
+      }
     }
   },
-  credentials: true
+  credentials: true,
 };
 
 app.use(cors(corsOptions));

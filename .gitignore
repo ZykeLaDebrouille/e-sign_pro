@@ -5,3 +5,5 @@ node_modules/
 backend/generated_pdfs/
 projet-e-sign_pro.txt
 backend/test-convention.pdf
+frontend/build/static/css
+frontend/build/static/js

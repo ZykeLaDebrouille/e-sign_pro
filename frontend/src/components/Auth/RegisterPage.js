@@ -22,7 +22,7 @@ const RegisterPage = () => {
     password: '',
     firstname: '',
     lastname: '',
-    role: 'ELEVE',
+    userRole: 'ELEVE',
     companyName: '',
     acceptTerms: false
   });
@@ -56,10 +56,10 @@ const RegisterPage = () => {
         password: formData.password,
         firstname: formData.firstname,
         lastname: formData.lastname,
-        role: formData.role
+        userRole: formData.userRole
       };
 
-      if (formData.role === 'ENTREPRISE' && formData.companyName) {
+      if (formData.userRole === ROLES.ENTREPRISE && formData.companyName) {
         userData.companyName = formData.companyName;
       }
 
