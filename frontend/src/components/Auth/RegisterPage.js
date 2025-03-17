@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaBuilding } from 'react-icons/fa';
-import userApi from '../../services/api/userApi'; // Chemin corrigé
+import * as userApi from '../../services/api/userApi';
 
 import './AuthStyles.css';
 
@@ -63,7 +63,6 @@ const RegisterPage = () => {
         userData.companyName = formData.companyName;
       }
 
-      // Utilisation directe de userApi
       await userApi.register(userData);
       navigate('/esignpro');
     } catch (err) {
