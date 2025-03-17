@@ -14,10 +14,8 @@ class ConventionController {
   async generateConventionPDF(req, res, next) {
     try {
       const data = req.body;
-      // Génère le PDF via le service dédié
       const pdfBytes = await pdfGenerator.generateConvention(data);
       
-      // Configuration pour le téléchargement du fichier
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename=convention.pdf`);
       
@@ -46,10 +44,6 @@ class ConventionController {
     }
   }
 
-  /**
-   * Met à jour une convention existante
-   * @route PUT /api/conventions/:id
-   */
   async updateConvention(req, res, next) {
     try {
       const { id } = req.params;
@@ -92,6 +86,28 @@ class ConventionController {
       next(error);
     }
   }
+  /**
+   * Mock pour une signature de convention
+   * @route POST /api/conventions/:id/sign
+   */
+  async signConvention(req, res, next) {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+  
+      // Simule l'enregistrement d'une signature
+      await database.run(`
+        INSERT INTO signatures (convention_id, user_id, role)
+        VALUES (?, ?, ?)
+      `, [id, userId, req.user.role]);
+  
+      res.status(200).json({ status: 'success', message: 'Signature enregistrée' });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
+
 }
 
 module.exports = new ConventionController();

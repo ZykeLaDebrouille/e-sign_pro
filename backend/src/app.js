@@ -15,7 +15,6 @@ const app = express();
 // Sécurisation des en-têtes HTTP avec Helmet
 app.use(helmet());
 
-// Configuration CORS pour permettre l'accès depuis le frontend
 const corsOptions = {
   origin: function(origin, callback) {
     const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost,http://localhost:3000').split(',');

@@ -3,11 +3,6 @@ const router = express.Router();
 const userRoutes = require('./userRoutes');
 const conventionsRoutes = require('./conventionsRoutes');
 
-
-router.get('/', (req, res) => {
-  res.json({ message: 'Bienvenue sur l\'API de signature électronique' });
-});
-
 // Routes
 router.use('/users', userRoutes);
 router.use('/conventions', conventionsRoutes);

@@ -1,11 +1,13 @@
 const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const { validateEmail, validatePassword } = require('../utils/validators');
+const jwt = require('jsonwebtoken');
 
 class UserController {
+  // Méthode pour enregistrer un utilisateur
   async register(req, res, next) {
     try {
-      const { email, password, firstname, lastname, userRole, companyName } = req.body;
+      const { email, password, firstname, lastname, userRole } = req.body;
 
       if (!email || !password) {
         throw new ApiError(400, 'Email et mot de passe requis');
@@ -17,35 +19,35 @@ class UserController {
         throw new ApiError(400, 'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre');
       }
 
-  const userData = {
-    email,
-    password,
-    firstname,
-    lastname,
-    userRole: role || 'ELEVE'
-  };
+      const userData = {
+        email,
+        password,
+        firstname,
+        lastname,
+        userRole: userRole || 'ELEVE'
+      };
 
-  const user = await User.create(userData);
+      const user = await User.create(userData);
 
-  const accessToken = User.generateAccessToken(user);
-  const refreshToken = User.generateRefreshToken(user);
+      const accessToken = User.generateAccessToken(user);
+      const refreshToken = User.generateRefreshToken(user);
 
-  this.setTokenCookies(res, accessToken, refreshToken);
+      this.setTokenCookies(res, accessToken, refreshToken);
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      user: user.toJSON(),
-      accessToken
+      res.status(201).json({
+        status: 'success',
+        data: {
+          user: user.toJSON(),
+          accessToken
+        }
+      });
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription:', error);
+      next(error);
     }
-  });
-  console.log('Utilisateur créé avec succès:', user);
-  } catch (error) {
-  console.error('Erreur lors de l\'inscription:', error);
-  next(error);
   }
-}
 
+  // Méthode pour connecter un utilisateur
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
@@ -70,23 +72,23 @@ class UserController {
     }
   }
 
-
-async checkAuth(req, res) {
-  try {
-    res.status(200).json({
-      status: 'success',
-      data: req.user
-    });
-  } catch (error) {
-    console.error('Erreur checkAuth:', error);
-    res.status(401).json({
-      status: 'error',
-      message: 'Non authentifié'
-    });
+  // Vérification de l'authentification
+  async checkAuth(req, res) {
+    try {
+      res.status(200).json({
+        status: 'success',
+        data: req.user
+      });
+    } catch (error) {
+      console.error('Erreur checkAuth:', error);
+      res.status(401).json({
+        status: 'error',
+        message: 'Non authentifié'
+      });
+    }
   }
-}
 
-
+  // Déconnexion
   async logout(req, res, next) {
     try {
       res.clearCookie('accessToken');
@@ -101,6 +103,7 @@ async checkAuth(req, res) {
     }
   }
 
+  // Récupérer le profil utilisateur
   async getProfile(req, res, next) {
     try {
       const userId = req.user.id;
@@ -121,6 +124,7 @@ async checkAuth(req, res) {
     }
   }
 
+  // Mettre à jour le profil utilisateur
   async updateProfile(req, res, next) {
     try {
       const userId = req.user.id;
@@ -152,6 +156,7 @@ async checkAuth(req, res) {
     }
   }
 
+  // Changer le mot de passe utilisateur
   async changePassword(req, res, next) {
     try {
       const userId = req.user.id;
@@ -166,68 +171,54 @@ async checkAuth(req, res) {
       }
 
       const user = await User.findById(userId);
-      if (!user) {
-        throw new ApiError(404, 'Utilisateur non trouvé');
-      }
+      
+	  if (!user) throw new ApiError(404,'Utilisateur non trouvé')
 
-      await user.changePassword(currentPassword, newPassword);
+	  await user.changePassword(currentPassword,newPassword)
 
-      res.status(200).json({
-        status: 'success',
-        message: 'Mot de passe modifié avec succès'
+	  res.status(200).json({status:"success",message:'Mot de passe modifié avec succès'})
+	}catch(error){
+	next(error)
+	}
+	}
+
+	// Rafraîchir le token JWT
+	
+	async refreshToken(req,res,next){
+	try{
+	const{refreshToken}=req.cookies
+	
+	if(!refreshToken){
+	throw new ApiError(401,'token non fourni')
+	}
+	const decoded=jwt.verify(refreshToken.process.env.JWT_REFRESH_SECRET)
+	const user=await User.findById(decoded.userId)
+	
+	if(!user){
+	throw new ApiError(404,'Utilisateur non trouvé')
+	}
+	const newAccessToken=User.generateAccessToken(user)
+	res.status.json({status:'success',data:{accessToken:newAccessToken}})
+	}catch(error){
+	next(error)
+	}
+	}
+
+    setTokenCookies(res, accessToken, refreshToken) {
+      const isProduction = process.env.NODE_ENV === 'production';
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'strict',
+        maxAge: 3600000
       });
-    } catch (error) {
-      next(error);
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'strict',
+        maxAge: 604800000
+      });
     }
   }
-
-  // Rafraîchir le token
-  async refreshToken(req, res, next) {
-    try {
-      const { refreshToken } = req.cookies;
-
-      if (!refreshToken) {
-        throw new ApiError(401, 'Token de rafraîchissement non fourni');
-      }
-
-      // Vérifier et décoder le refresh token
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-      const user = await User.findById(decoded.userId);
-
-      if (!user) {
-        throw new ApiError(404, 'Utilisateur non trouvé');
-      }
-
-
-      const newAccessToken = User.generateAccessToken(user);
-
-      res.status(200).json({
-        status: 'success',
-        data: {
-          accessToken: newAccessToken
-        }
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // Méthode utilitaire pour définir les cookies de token
-  setTokenCookies(res, accessToken, refreshToken) {
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 3600000 // 1 heure
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 604800000 // 7 jours
-    });
-  }
-}
-
-module.exports = new UserController();
+  
+  module.exports = new UserController();

@@ -29,7 +29,7 @@ class User {
       const { ROLES } = require('../config/roles');
       const validRoles = Object.values(ROLES);
       // Utiliser un rôle par défaut si non fourni ou invalide
-      const userRole = (role && validRoles.includes(role)) ? role : ROLES.ELEVE;
+      const userRole = (userRole && validRoles.includes(userRole)) ? userRole : ROLES.ELEVE;
   
       const hashedPassword = await bcrypt.hash(password, 10);
       
@@ -121,7 +121,7 @@ class User {
       { 
         userId: user.id,
         email: user.email,
-        role: user.role 
+        userRole: user.userRole 
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
@@ -271,7 +271,7 @@ async deactivateAccount() {
       email: this.email,
       firstname: this.firstname,
       lastname: this.lastname,
-      role: this.role,
+      userRole: this.userRole,
       created_at: this.created_at,
       updated_at: this.updated_at
     };
