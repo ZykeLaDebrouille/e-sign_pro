@@ -8,8 +8,7 @@ import ContactPage from './components/ContactPage';
 import AboutPage from './components/AboutPage';
 import ESignProPage from './components/ESignProPage';
 
-import LoginPage from './components/Auth/LoginPage';
-import RegisterPage from './components/Auth/RegisterPage';
+import AuthPage from './components/Auth/AuthPage';
 import ProfilePage from './components/ProfilePage';
 
 import UnauthorizedPage from './components/UnauthorizedPage';
@@ -47,8 +46,8 @@ const AppRoutes = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<AuthPage initialMode="login" />} />
+            <Route path="/register" element={<AuthPage initialMode="register" />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             
             {/* Routes protégées */}

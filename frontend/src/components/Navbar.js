@@ -42,12 +42,10 @@ const Navbar = () => {
           </li>
           
           {loading ? (
-            // Afficher un indicateur de chargement pendant la vérification
             <li className="nav-item">
               <span className="nav-link">Chargement...</span>
             </li>
           ) : currentUser ? (
-            // Options pour utilisateur connecté
             <>
               <li className="nav-item">
                 <Link to="/esignpro" className="nav-link">
