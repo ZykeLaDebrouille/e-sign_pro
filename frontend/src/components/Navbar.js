@@ -1,22 +1,21 @@
-// src/components/Navbar.js
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
-  const { currentUser, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
+  const { currentUser, logoutUser, loading, checkAuthStatus } = useAuth();
 
-  // Ferme le menu mobile lors des changements de route
   useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+    checkAuthStatus();
+  }, []);
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    await logoutUser();
   };
+
+  console.log("État d'authentification dans Navbar:", { currentUser, loading });
 
   return (
     <nav className="navbar">
@@ -25,11 +24,7 @@ const Navbar = () => {
           E-Sign Pro
         </Link>
 
-        <div className="menu-icon" onClick={toggleMobileMenu}>
-          <i className={mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'} />
-        </div>
-
-        <ul className={mobileMenuOpen ? 'nav-menu active' : 'nav-menu'}>
+        <ul className="nav-menu">
           <li className="nav-item">
             <Link to="/" className="nav-link">
               Accueil
@@ -46,8 +41,13 @@ const Navbar = () => {
             </Link>
           </li>
           
-          {currentUser ? (
-            // Pour un utilisateur connecté
+          {loading ? (
+            // Afficher un indicateur de chargement pendant la vérification
+            <li className="nav-item">
+              <span className="nav-link">Chargement...</span>
+            </li>
+          ) : currentUser ? (
+            // Options pour utilisateur connecté
             <>
               <li className="nav-item">
                 <Link to="/esignpro" className="nav-link">
@@ -55,21 +55,21 @@ const Navbar = () => {
                 </Link>
               </li>
               <li className="nav-item">
+                <Link to="/profile" className="nav-link">
+                  {currentUser.firstname || 'Profil'}
+                </Link>
+              </li>
+              <li className="nav-item">
                 <button 
-                  onClick={logout} 
-                  className="nav-link" 
-                  style={{ 
-                    border: 'none', 
-                    background: 'none',
-                    cursor: 'pointer' 
-                  }}
+                  onClick={handleLogout} 
+                  className="nav-link logout-button"
                 >
                   Déconnexion
                 </button>
               </li>
             </>
           ) : (
-            // Pour un utilisateur non connecté
+            // Options pour visiteur non connecté
             <>
               <li className="nav-item">
                 <Link to="/login" className="nav-link">
