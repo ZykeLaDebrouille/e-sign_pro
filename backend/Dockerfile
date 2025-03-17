@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
 # Copier et installer les dépendances
 COPY package*.json ./
 RUN npm install
-RUN npm rebuild sqlite3 --build-from-source
 
 # Copier le reste des fichiers
 COPY . .

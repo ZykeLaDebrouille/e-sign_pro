@@ -41,10 +41,9 @@ class User {
   
       console.log('Résultat de l\'insertion:', result);
   
-      // Récupérer l'utilisateur créé
       const newUser = await database.get(
         'SELECT * FROM users WHERE id = ?',
-        [result.lastID] // Utilise `lastID` au lieu de `id`
+        [result.lastID]
       );
   
       if (!newUser) {

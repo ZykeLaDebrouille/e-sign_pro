@@ -16,19 +16,20 @@ const app = express();
 app.use(helmet());
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: function(origin, callback) {
     if (process.env.NODE_ENV === 'development') {
-      callback(null, true); // Autorise toutes les origines en développement
+      return callback(null, true);
+    }
+    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost,http://localhost:3000').split(',');
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
     } else {
-      const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost,http://localhost:3000').split(',');
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Non autorisé par CORS'));
-      }
+      callback(new Error('Non autorisé par CORS'));
     }
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
@@ -45,6 +46,14 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api', routes);
 app.use(errorHandler);
 
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+  app.use(express.static(path.join(__dirname, '../../frontend/build')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
+  });
+}
 // Gestion des promesses non capturées
 process.on('unhandledRejection', (err) => {
   console.error('Erreur non gérée:', err);

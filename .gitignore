@@ -7,3 +7,7 @@ projet-e-sign_pro.txt
 backend/test-convention.pdf
 frontend/build/static/css
 frontend/build/static/js
+
+docker-compose down
+docker-compose build --no-cache
+docker-compose up

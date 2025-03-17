@@ -132,7 +132,7 @@ class Database {
         password TEXT NOT NULL,
         firstname TEXT,
         lastname TEXT,
-        role TEXT DEFAULT 'ELEVE',
+        userRole TEXT DEFAULT 'ELEVE',
         is_active BOOLEAN DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -247,7 +247,7 @@ class Database {
           console.error('Erreur d\'exécution de la requête:', err);
           reject(err);
         } else {
-          resolve({ id: this.lastID, changes: this.changes });
+          resolve({ lastID: this.lastID, changes: this.changes });
         }
       });
     });
