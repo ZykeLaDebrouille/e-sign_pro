@@ -1,7 +1,3 @@
-/**
- * Configuration et gestion de la connexion à la base de données SQLite
- * Ce module gère la création, l'initialisation et les interactions avec la base de données
- */
 const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
@@ -24,16 +20,12 @@ class Database {
    */
   async connect() {
     try {
-      // Si déjà connecté, renvoie l'instance existante
       if (this.isConnected && this.db) {
         console.log('Utilisation de la connexion existante');
         return this.db;
       }
-
-      // Préparation du répertoire de la base de données
       await this.prepareDbDirectory();
 
-      // Connexion à la base de données
       return new Promise((resolve, reject) => {
         console.log(`Connexion à la base de données: ${this.dbPath}`);
         
@@ -79,48 +71,6 @@ class Database {
     }
   }
 
-  /**
-   * Prépare le répertoire de la base de données
-   * Crée le répertoire si nécessaire et vérifie les permissions
-   */
-  async prepareDbDirectory() {
-    try {
-      // Créer le répertoire s'il n'existe pas
-      if (!fs.existsSync(this.dbDir)) {
-        fs.mkdirSync(this.dbDir, { recursive: true });
-        console.log(`Répertoire de base de données créé: ${this.dbDir}`);
-      }
-
-      // Vérifier les permissions d'écriture
-      try {
-        fs.accessSync(this.dbDir, fs.constants.W_OK);
-        console.log(`Le répertoire ${this.dbDir} est accessible en écriture`);
-      } catch (err) {
-        console.warn(`Problème de permissions sur ${this.dbDir}, tentative de correction`);
-        fs.chmodSync(this.dbDir, 0o777);
-        console.log(`Permissions modifiées pour ${this.dbDir}`);
-      }
-
-      // Si le fichier existe, vérifier ses permissions
-      if (fs.existsSync(this.dbPath)) {
-        try {
-          fs.accessSync(this.dbPath, fs.constants.W_OK);
-          console.log(`Le fichier ${this.dbPath} est accessible en écriture`);
-        } catch (err) {
-          console.warn(`Problème de permissions sur ${this.dbPath}, tentative de correction`);
-          fs.chmodSync(this.dbPath, 0o666);
-          console.log(`Permissions modifiées pour ${this.dbPath}`);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors de la préparation du répertoire:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Initialise les tables de la base de données
-   */
   async initializeTables() {
     console.log('Initialisation des tables...');
 
@@ -181,7 +131,6 @@ class Database {
       )`
     ];
 
-    // Exécuter chaque requête dans une transaction
     await this.beginTransaction();
     try {
       for (const query of queries) {
@@ -253,10 +202,6 @@ class Database {
     });
   }
 
-  /**
-   * Débute une transaction
-   * @returns {Promise<void>}
-   */
   beginTransaction() {
     return this.run('BEGIN TRANSACTION');
   }
@@ -277,10 +222,6 @@ class Database {
     return this.run('ROLLBACK');
   }
 
-  /**
-   * Ferme la connexion à la base de données
-   * @returns {Promise<void>}
-   */
   close() {
     return new Promise((resolve, reject) => {
       if (this.db) {
@@ -301,10 +242,6 @@ class Database {
     });
   }
 
-  /**
-   * Fournit des statistiques sur la base de données
-   * @returns {Promise<Object>} Statistiques
-   */
   async getStats() {
     try {
       const tables = await this.query("SELECT name FROM sqlite_master WHERE type='table'");
@@ -327,6 +264,5 @@ class Database {
   }
 }
 
-// Exporter une instance unique (pattern Singleton)
 const database = new Database();
 module.exports = database;

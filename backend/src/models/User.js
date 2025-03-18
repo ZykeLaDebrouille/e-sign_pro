@@ -14,7 +14,6 @@ class User {
     this.updated_at = userData.updated_at;
   }
 
-  // Méthodes statiques pour la gestion des utilisateurs
   static async create({ email, password, firstname, lastname, userRole }) {
     try {
       const existingUser = await database.get(
@@ -24,28 +23,22 @@ class User {
       if (existingUser) {
         throw new ApiError(409, 'Cet email est déjà utilisé');
       }
-  
-      // Vérifier si le rôle est valide
       const { ROLES } = require('../config/roles');
       const validRoles = Object.values(ROLES);
       userRole = (userRole && validRoles.includes(userRole)) ? userRole : ROLES.ELEVE;
   
       const hashedPassword = await bcrypt.hash(password, 10);
-  
-      // Insérer l'utilisateur
       const result = await database.run(
         `INSERT INTO users (email, password, firstname, lastname, userRole)
         VALUES (?, ?, ?, ?, ?)`,
         [email, hashedPassword, firstname, lastname, userRole]
       );
-  
-      console.log('Résultat de l\'insertion:', result);
-  
+    // debug console.log('Résultat de l\'insertion:', result);
       const newUser = await database.get(
         'SELECT * FROM users WHERE id = ?',
         [result.lastID]
       );
-  
+
       if (!newUser) {
         throw new Error('Utilisateur non trouvé après création');
       }
@@ -56,7 +49,6 @@ class User {
       throw error instanceof ApiError ? error : new ApiError(500, 'Erreur lors de la création de l\'utilisateur: ' + error.message);
     }
   }
-  
 
   static async findByEmail(email) {
     try {
@@ -84,23 +76,17 @@ class User {
 
   static async authenticate(email, password) {
     try {
-      // Récupérer l'utilisateur avec son mot de passe
       const user = await database.get(
         'SELECT * FROM users WHERE email = ?',
         [email]
       );
-
       if (!user) {
         throw new ApiError(401, 'Email ou mot de passe incorrect');
       }
-
-      // Vérifier le mot de passe
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         throw new ApiError(401, 'Email ou mot de passe incorrect');
       }
-
-      // Générer les tokens
       const accessToken = this.generateAccessToken(user);
       const refreshToken = this.generateRefreshToken(user);
 
@@ -135,12 +121,10 @@ class User {
     );
   }
 
-  // Méthodes d'instance
   async update(updateData) {
     try {
       const allowedUpdates = ['firstname', 'lastname', 'email'];
       
-      // Filtrer les mises à jour autorisées
       const updates = Object.keys(updateData)
         .filter(key => allowedUpdates.includes(key))
         .reduce((obj, key) => ({ ...obj, [key]: updateData[key] }), {});
@@ -161,8 +145,7 @@ class User {
         WHERE id = ?`,
         values
       );
-  
-      // Récupérer l'utilisateur mis à jour
+
       const updatedUser = await User.findById(this.id);
       
     Object.assign(this.updatedUser)
@@ -175,18 +158,14 @@ class User {
 
   async changePassword(currentPassword, newPassword) {
     try {
-      // Vérifier l'ancien mot de passe
       const user = await database.get(
         'SELECT password FROM users WHERE id = ?',
         [this.id]
       );
-
       const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
       if (!isPasswordValid) {
         throw new ApiError(401, 'Mot de passe actuel incorrect');
       }
-
-      // Hasher et enregistrer le nouveau mot de passe
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       await database.run(
         'UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
@@ -199,42 +178,6 @@ class User {
       throw new ApiError(500, 'Erreur lors du changement de mot de passe');
     }
   }
-/**
-   * Récupérer tous les documents associés à l'utilisateur
-   * @returns {Promise<Array>}
-   */
-async getDocuments() {
-  try {
-    const documents = await database.all(
-      `SELECT documents.* 
-      FROM documents 
-      JOIN user_documents ON documents.id = user_documents.document_id 
-      WHERE user_documents.user_id = ?`,
-      [this.id]
-    );
-    return documents;
-  } catch (error) {
-    throw new ApiError(500, 'Erreur lors de la récupération des documents');
-  }
-}
-
-/**
- * Vérifier si l'utilisateur a le droit de signer un document
- * @param {number} documentId - ID du document
- * @returns {Promise<boolean>}
- */
-async canSignDocument(documentId) {
-  try {
-    const document = await database.get(
-      `SELECT * FROM user_documents 
-        WHERE user_id = ? AND document_id = ? AND can_sign = 1`,
-      [this.id, documentId]
-    );
-    return !!document;
-  } catch (error) {
-    throw new ApiError(500, 'Erreur lors de la vérification des droits');
-  }
-}
 
 /**
  * Exécute une requête renvoyant plusieurs lignes (alias de query)
@@ -246,10 +189,6 @@ all(sql, params = []) {
   return this.query(sql, params);
 }
 
-/**
- * Désactiver temporairement un compte utilisateur
- * @returns {Promise<void>}
- */
 async deactivateAccount() {
   try {
     await database.run(
@@ -261,8 +200,6 @@ async deactivateAccount() {
   }
 }
 
-
-  // Méthode pour obtenir un objet utilisateur sans données sensibles
   toJSON() {
     return {
       id: this.id,
