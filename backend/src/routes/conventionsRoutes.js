@@ -20,8 +20,8 @@ router.delete(
   auth,
   conventionController.softDeleteConvention);
 
-router.get(
-  '/:id/pdf',
+router.post(
+  '/generate-pdf',
   auth,
   conventionController.generateConventionPDF);
 

@@ -18,8 +18,7 @@ class ConventionController {
       
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename=convention.pdf`);
-      
-      // Envoi du PDF
+
       return res.send(Buffer.from(pdfBytes));
     } catch (error) {
       next(error);

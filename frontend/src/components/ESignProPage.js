@@ -111,7 +111,6 @@ const ConventionForm = memo(({ isOpen, onClose, onSubmit, filiere }) => {
   );
 });
 
-// Composant principal
 const ESignProPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -119,7 +118,6 @@ const ESignProPage = () => {
   const [conventions, setConventions] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   
-  // Filière par défaut pour les stages
   const filiere = "Charpente";
 
   useEffect(() => {
@@ -156,30 +154,39 @@ const ESignProPage = () => {
     fetchUserProfile();
   }, []);
   
-  // Fonction de génération de PDF avec l'API existante
   const handleGeneratePDF = async (conventionId) => {
     setLoading(true);
     try {
       const convention = conventions.find(conv => conv.id === conventionId);
       if (!convention) throw new Error("Convention non trouvée");
       
-      // Appel à l'API generateConvention
-      await conventionApi.generateConvention(convention);
+      // Appel à l'API avec les données complètes de la convention
+      const response = await conventionApi.generatePDF(convention);
+      
+      // Création d'un objet URL pour le blob reçu
+      const pdfUrl = window.URL.createObjectURL(new Blob([response.data]));
+      
+      // Création d'un lien temporaire pour télécharger le PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.setAttribute('download', `convention-${convention.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Nettoyage
+      window.URL.revokeObjectURL(pdfUrl);
+      document.body.removeChild(link);
       
       setLoading(false);
-      // Affichage d'une confirmation
-      alert(`Le PDF de la convention "${convention.sujet_stage}" a été généré avec succès.`);
     } catch (err) {
       setError("Erreur lors de la génération du PDF: " + err.message);
       setLoading(false);
     }
   };
   
-  // Fonction de création de convention
   const handleCreateConvention = (data) => {
     setLoading(true);
     
-    // Simulation d'appel API
     setTimeout(() => {
       const newConvention = {
         id: conventions.length + 1,
@@ -241,9 +248,9 @@ const ESignProPage = () => {
                   <h4>{conv.sujet_stage}</h4>
                   <span className={`status-badge ${conv.status}`}>
                     {conv.status === 'en_attente_signature' ? 'En attente' : 
-                     conv.status === 'brouillon' ? 'Brouillon' : 
-                     conv.status === 'planifié' ? 'Planifié' : 
-                     conv.status === 'en_cours' ? 'En cours' : conv.status}
+                    conv.status === 'brouillon' ? 'Brouillon' : 
+                    conv.status === 'planifié' ? 'Planifié' : 
+                    conv.status === 'en_cours' ? 'En cours' : conv.status}
                   </span>
                 </div>
                 
