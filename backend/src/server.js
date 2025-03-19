@@ -20,7 +20,6 @@ const PORT = process.env.PORT || 5500;
 
 process.on('uncaughtException', (err) => {
   console.error('ERREUR NON GÉRÉE:', err);
-  // Ne pas quitter immédiatement pour permettre l'écriture des logs
   setTimeout(() => process.exit(1), 1000);
 });
 

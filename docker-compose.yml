@@ -8,8 +8,8 @@ services:
       - sqlite-data:/usr/src/app/database
       - pdf-data:/usr/src/app/pdfs
     environment:
-      - JWT_SECRET=ton_secret_jwt
-      - JWT_REFRESH_SECRET=ton_secret_refresh
+      - JWT_SECRET=zLhqQZ9j2XsJdEkW3mRp7TvN8fA6yGcB
+      - JWT_REFRESH_SECRET=bPdS5vF7mK2jL9aR4eX8qW3tZ6yUcG1h
       - NODE_ENV=development
     networks:
       - app-network

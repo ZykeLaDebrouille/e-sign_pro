@@ -4,13 +4,12 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://backend:5500', // URL du service backend dans Docker
+      target: 'http://localhost:5500',
       changeOrigin: true,
       pathRewrite: {
-        '^/api': '/api', // Conserve le préfixe /api
+        '^/api': '/api',
       },
       onProxyReq: function(proxyReq, req, res) {
-        // Conserver l'en-tête Origin
         if (req.headers.origin) {
           proxyReq.setHeader('Origin', req.headers.origin);
         }

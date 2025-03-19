@@ -24,7 +24,6 @@ class Database {
         console.log('Utilisation de la connexion existante');
         return this.db;
       }
-      await this.prepareDbDirectory();
 
       return new Promise((resolve, reject) => {
         console.log(`Connexion à la base de données: ${this.dbPath}`);
@@ -44,10 +43,8 @@ class Database {
             this.isConnected = true;
             
             try {
-              // Activation des clés étrangères
               await this.run('PRAGMA foreign_keys = ON');
               
-              // Initialisation des tables
               await this.initializeTables();
               
               // Configuration de la gestion des erreurs

@@ -4,7 +4,6 @@ const { validateEmail, validatePassword } = require('../utils/validators');
 const jwt = require('jsonwebtoken');
 
 class UserController {
-  // Méthode pour enregistrer un utilisateur
   async register(req, res, next) {
     try {
       const { email, password, firstname, lastname, userRole } = req.body;
@@ -47,7 +46,6 @@ class UserController {
     }
   }
 
-  // Méthode pour connecter un utilisateur
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
@@ -72,7 +70,6 @@ class UserController {
     }
   }
 
-  // Vérification de l'authentification
   async checkAuth(req, res) {
     try {
       res.status(200).json({
@@ -88,7 +85,6 @@ class UserController {
     }
   }
 
-  // Déconnexion
   async logout(req, res, next) {
     try {
       res.clearCookie('accessToken');
@@ -103,7 +99,6 @@ class UserController {
     }
   }
 
-  // Récupérer le profil utilisateur
   async getProfile(req, res, next) {
     try {
       const userId = req.user.id;
@@ -124,7 +119,6 @@ class UserController {
     }
   }
 
-  // Mettre à jour le profil utilisateur
   async updateProfile(req, res, next) {
     try {
       const userId = req.user.id;
@@ -156,7 +150,6 @@ class UserController {
     }
   }
 
-  // Changer le mot de passe utilisateur
   async changePassword(req, res, next) {
     try {
       const userId = req.user.id;
