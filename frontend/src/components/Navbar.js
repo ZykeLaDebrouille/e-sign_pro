@@ -32,7 +32,7 @@ const Navbar = () => {
           </li>
           <li className="nav-item">
             <Link to="/about" className="nav-link">
-              À propos
+              C'est quoi ?
             </Link>
           </li>
           <li className="nav-item">
@@ -54,7 +54,7 @@ const Navbar = () => {
               </li>
               <li className="nav-item">
                 <Link to="/profile" className="nav-link">
-                  {currentUser.firstname || 'Profil'}
+                  {currentUser.firstname || 'Mon Profil'}
                 </Link>
               </li>
               <li className="nav-item">
@@ -67,16 +67,10 @@ const Navbar = () => {
               </li>
             </>
           ) : (
-            // Options pour visiteur non connecté
             <>
               <li className="nav-item">
-                <Link to="/login" className="nav-link">
-                  Connexion
-                </Link>
-              </li>
-              <li className="nav-item">
                 <Link to="/register" className="nav-link button">
-                  S'inscrire
+                  Se connecter
                 </Link>
               </li>
             </>

@@ -1,0 +1,199 @@
+/* AboutPage.css */
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    color: #2c3e50;
+  }
+  
+  .header-section {
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+  }
+  
+  .gradient-title {
+    font-size: 4rem;
+    margin: 0;
+    background: linear-gradient(45deg, #3498db, #1abc9c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .gradient-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(45deg, #3498db, #1abc9c);
+    border-radius: 2px;
+  }
+  
+  .tagline {
+    font-size: 1.5rem;
+    opacity: 0.8;
+    margin-top: 25px;
+    font-weight: 300;
+  }
+  
+  .content-section {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+  }
+  
+  .feature-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(52, 152, 219, 0.1);
+  }
+  
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(26, 188, 156, 0.05) 100%);
+    z-index: -1;
+  }
+  
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+  
+  .feature-card h2 {
+    margin: 15px 0;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .feature-card p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+  
+  .feature-item {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-top: 4px solid transparent;
+    border-image: linear-gradient(to right, #3498db, #1abc9c);
+    border-image-slice: 1;
+  }
+  
+  .feature-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(52, 152, 219, 0.1);
+  }
+  
+  .feature-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .feature-item h3 {
+    font-size: 1.3rem;
+    margin: 10px 0;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .feature-item p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #555;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .team-section {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .team-section::before {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(26, 188, 156, 0.1));
+    border-radius: 50%;
+    top: -75px;
+    right: -75px;
+    z-index: 0;
+  }
+  
+  .team-section::after {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(45deg, rgba(26, 188, 156, 0.1), rgba(52, 152, 219, 0.1));
+    border-radius: 50%;
+    bottom: -50px;
+    left: -50px;
+    z-index: 0;
+  }
+  
+  .team-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .team-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    position: relative;
+    z-index: 1;
+  }
+  
+  @media (max-width: 768px) {
+    .gradient-title {
+      font-size: 3rem;
+    }
+    
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .feature-card,
+    .team-section {
+      padding: 30px 20px;
+    }
+  }
+  

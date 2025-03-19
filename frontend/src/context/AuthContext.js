@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      // Appel à l'API pour vérifier l'authentification
       const response = await checkAuth();
       
       if (response && response.data) {
@@ -58,10 +57,6 @@ export const AuthProvider = ({ children }) => {
       console.error("Erreur lors de la déconnexion:", error);
     }
   };
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
 
   const hasRole = (roles) => {
     if (!currentUser) return false;

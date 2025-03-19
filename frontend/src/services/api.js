@@ -23,11 +23,9 @@ API.interceptors.request.use(config => {
   return Promise.reject(error);
 });
 
-// Intercepteur pour gérer les erreurs
 API.interceptors.response.use(
   response => response,
   error => {
-    // Gestion des erreurs 401 (non autorisé)
     if (error.response && error.response.status === 401) {
       // Sauf si on est déjà sur login
       if (window.location.pathname !== '/login') {

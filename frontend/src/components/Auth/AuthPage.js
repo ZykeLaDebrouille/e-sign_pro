@@ -18,13 +18,11 @@ const AuthPage = ({ initialMode = 'login' }) => {
   const navigate = useNavigate();
   const { loginUser } = useAuth();
 
-  // État pour le formulaire de connexion
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
   });
 
-  // État pour le formulaire d'inscription
   const [registerData, setRegisterData] = useState({
     email: '',
     password: '',
@@ -39,7 +37,6 @@ const AuthPage = ({ initialMode = 'login' }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Gestionnaire pour le formulaire de connexion
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
     setLoginData(prev => ({
@@ -48,7 +45,6 @@ const AuthPage = ({ initialMode = 'login' }) => {
     }));
   };
 
-  // Gestionnaire pour le formulaire d'inscription
   const handleRegisterChange = (e) => {
     const { name, value, type, checked } = e.target;
     setRegisterData(prev => ({
@@ -57,7 +53,6 @@ const AuthPage = ({ initialMode = 'login' }) => {
     }));
   };
 
-  // Soumission du formulaire de connexion
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -77,7 +72,6 @@ const AuthPage = ({ initialMode = 'login' }) => {
     }
   };
 
-  // Soumission du formulaire d'inscription
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
 

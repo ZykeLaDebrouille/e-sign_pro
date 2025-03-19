@@ -4,7 +4,7 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.cookies.accessToken; // Récupération depuis le cookie
+    const token = req.cookies.accessToken;
 
     if (!token) {
       return next(new ApiError(401, 'Authentification requise'));
